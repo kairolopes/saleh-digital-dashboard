@@ -473,14 +473,14 @@
         const currentQty = Number(p.currentQuantity || 0);
         const unitPrice = Number(p.unitPrice || 0);
 
-       tr.innerHTML = `
+tr.innerHTML = `
   <td class="px-4 py-3 text-sm">${p.description || "-"}</td>
   <td class="px-4 py-3 text-sm">${p.unit || "-"}</td>
-  <td class="px-4 py-3 text-sm text-right">R$ ${Number(p.unitPrice || 0).toFixed(2)}</td>
+  <td class="px-4 py-3 text-sm text-right">R$ ${unitPrice.toFixed(2)}</td>
   <td class="px-4 py-3 text-sm text-right">${currentQty.toFixed(2)}</td>
   <td class="px-4 py-3 text-xs text-slate-400">${p.location || "-"}</td>
 
-    <td class="px-4 py-2 text-right text-xs space-x-2 whitespace-nowrap text-amber-400 font-medium">
+  <td class="px-4 py-3 text-right text-xs whitespace-nowrap text-amber-400 font-medium">
     <span class="cursor-pointer hover:underline" data-action="purchase" data-id="${p.id}">
       Registrar
     </span>
@@ -494,6 +494,7 @@
     </span>
   </td>
 `;
+
 
 
         productsTableBody.appendChild(tr);
