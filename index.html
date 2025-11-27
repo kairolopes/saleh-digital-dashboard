@@ -309,6 +309,50 @@
     </main>
   </div>
 
+  <!-- MODAL: Histórico de compras -->
+  <div id="history-modal"
+       class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+    <div class="w-full max-w-2xl rounded-2xl bg-slate-950 border border-slate-800 shadow-xl">
+      <!-- Cabeçalho -->
+      <div class="flex items-center justify-between px-4 py-3 border-b border-slate-800">
+        <div>
+          <h3 class="text-sm font-semibold text-slate-100">Histórico de compras</h3>
+          <p class="text-xs text-slate-500">
+            Produto:
+            <span id="history-product-name" class="font-medium text-slate-200"></span>
+          </p>
+        </div>
+        <button id="history-modal-close"
+                class="text-xs text-slate-400 hover:text-slate-200">
+          ✕ Fechar
+        </button>
+      </div>
+
+      <!-- Corpo -->
+      <div class="px-4 py-3 max-h-80 overflow-auto">
+        <table class="w-full text-xs">
+          <thead class="bg-slate-900/60 sticky top-0 z-10">
+            <tr>
+              <th class="text-left px-3 py-2 font-semibold text-slate-400">Data</th>
+              <th class="text-right px-3 py-2 font-semibold text-slate-400">Qtd</th>
+              <th class="text-right px-3 py-2 font-semibold text-slate-400">Valor total (R$)</th>
+              <th class="text-right px-3 py-2 font-semibold text-slate-400">Valor unit. (R$)</th>
+            </tr>
+          </thead>
+          <tbody id="history-table-body" class="divide-y divide-slate-800">
+            <!-- Linhas via JS -->
+          </tbody>
+        </table>
+
+        <p id="history-empty-message"
+           class="text-xs text-slate-500 text-center py-4 hidden">
+          Nenhuma compra registrada para este produto.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  
   <script>
     // 🔗 URL da sua API no Render
     const API_BASE = "https://saleh-digital-api.onrender.com";
@@ -343,6 +387,26 @@
     const ordersTableBody = document.getElementById("orders-table-body");
     const ordersCount = document.getElementById("orders-count");
 
+
+    // --------- elementos do modal de histórico ---------
+const historyModal = document.getElementById("history-modal");
+const historyModalClose = document.getElementById("history-modal-close");
+const historyProductName = document.getElementById("history-product-name");
+const historyTableBody = document.getElementById("history-table-body");
+const historyEmptyMessage = document.getElementById("history-empty-message");
+
+// fechar modal no X
+historyModalClose.addEventListener("click", () => {
+  historyModal.classList.add("hidden");
+});
+
+// fechar modal clicando fora da caixa
+historyModal.addEventListener("click", (e) => {
+  if (e.target === historyModal) {
+    historyModal.classList.add("hidden");
+  }
+});
+    
     let allProducts = [];
     let stockChart = null;
 
@@ -607,67 +671,58 @@
       }
     }
 
-    // 📜 Histórico de compras do produto
-    async function handleShowHistory(productId) {
-      try {
-        const res = await fetch(`${API_BASE}/products/${productId}/history`);
-        if (!res.ok) {
-          const errText = await res.text();
-          console.error("Erro ao buscar histórico:", errText);
-          alert("Erro ao buscar histórico de compras.");
-          return;
-        }
-
-        const data = await res.json();
-        const product = data.product || {};
-        const purchases = Array.isArray(data.purchases) ? data.purchases : [];
-        const avg = data.averageLast4UnitPrice;
-
-        if (purchases.length === 0) {
-          alert("Nenhuma compra registrada para este produto.");
-          return;
-        }
-
-        // preço atual = última compra; anterior = penúltima
-        const last = purchases[0];
-        const previous = purchases[1];
-
-        let texto = "";
-        texto += `Produto: ${product.description || "-"}\n`;
-        texto += `Unidade: ${product.unit || "-"}\n\n`;
-
-        texto += "Histórico de compras (da mais recente para a mais antiga):\n\n";
-        purchases.forEach((h, idx) => {
-          const qtd = Number(h.quantity || 0);
-          const total = Number(h.totalPrice || 0);
-          const unit = Number(h.unitPrice || 0);
-          const dataCompra = h.purchaseDate || h.date || "";
-
-          texto += `#${idx + 1}\n`;
-          texto += `Data: ${dataCompra}\n`;
-          texto += `Quantidade: ${qtd}\n`;
-          texto += `Valor total: R$ ${total.toFixed(2)}\n`;
-          texto += `Valor unitário: R$ ${unit.toFixed(2)}\n`;
-          texto += "-----------------------------\n";
-        });
-
-        texto += "\nResumo de preços:\n";
-        if (last && last.unitPrice != null) {
-          texto += `Preço atual (última compra): R$ ${Number(last.unitPrice).toFixed(2)}\n`;
-        }
-        if (previous && previous.unitPrice != null) {
-          texto += `Preço anterior (penúltima compra): R$ ${Number(previous.unitPrice).toFixed(2)}\n`;
-        }
-        if (avg != null) {
-          texto += `Média das últimas 4 compras: R$ ${Number(avg).toFixed(2)}\n`;
-        }
-
-        alert(texto);
-      } catch (err) {
-        console.error("Erro na requisição de histórico:", err);
-        alert("Erro de conexão ao buscar histórico.");
-      }
+  // 📜 Mostrar histórico de compras do produto (em modal bonito)
+async function handleShowHistory(productId) {
+  try {
+    const res = await fetch(`${API_BASE}/products/${productId}/history`);
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error("Erro ao buscar histórico:", errText);
+      alert("Erro ao buscar histórico de compras.");
+      return;
     }
+
+    const history = await res.json();
+
+    // pegar nome do produto na lista que já está em memória
+    const product = allProducts.find(p => p.id === productId);
+    historyProductName.textContent = product ? (product.description || "-") : "-";
+
+    // limpa tabela
+    historyTableBody.innerHTML = "";
+
+    if (!Array.isArray(history) || history.length === 0) {
+      // sem compras: mostra mensagem e esconde tabela
+      historyEmptyMessage.classList.remove("hidden");
+    } else {
+      historyEmptyMessage.classList.add("hidden");
+
+      history.forEach((h) => {
+        const qtd = Number(h.quantity || 0);
+        const total = Number(h.totalPrice || 0);
+        const unit = Number(h.unitPrice || (qtd > 0 ? total / qtd : 0));
+        const dataStr = h.purchaseDate || h.date || "";
+
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-900/60";
+        tr.innerHTML = `
+          <td class="px-3 py-2">${dataStr}</td>
+          <td class="px-3 py-2 text-right">${qtd.toFixed(2)}</td>
+          <td class="px-3 py-2 text-right">R$ ${total.toFixed(2)}</td>
+          <td class="px-3 py-2 text-right">R$ ${unit.toFixed(2)}</td>
+        `;
+        historyTableBody.appendChild(tr);
+      });
+    }
+
+    // abre o modal
+    historyModal.classList.remove("hidden");
+  } catch (err) {
+    console.error("Erro na requisição de histórico:", err);
+    alert("Erro de conexão ao buscar histórico.");
+  }
+}
+
 
     // -----------------------------
     // Submeter formulário de novo produto
