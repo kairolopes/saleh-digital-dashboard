@@ -1,85 +1,24 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>Saleh Digital - Painel de Gestão</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8">
+  <title>Saleh Digital - Painel</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
-<body class="bg-slate-950 text-slate-100">
-
-  <div class="min-h-screen flex">
-    <aside class="w-64 bg-slate-950 border-r border-slate-800 flex flex-col">
-      <div class="px-6 py-5 border-b border-slate-800">
-        <h2 class="text-xl font-bold text-amber-400">Saleh Digital</h2>
-        <p class="text-xs text-slate-500">Painel de Gestão</p>
-      </div>
-
-      <nav class="flex-1 px-4 py-4 space-y-2">
-        <button onclick="showTab('estoque')" class="w-full px-3 py-2 rounded-lg bg-slate-800 text-amber-400">
-          📦 Estoque
-        </button>
-        <button onclick="showTab('pedidos')" class="w-full px-3 py-2 rounded-lg hover:bg-slate-800">
-          🧾 Pedidos
-        </button>
-      </nav>
-    </aside>
-
-    <main class="flex-1 p-6">
-      <div id="estoque" class="block">
-        <h1 class="text-xl font-semibold mb-4">Controle de Estoque</h1>
-        <table class="w-full text-sm border border-slate-800">
-          <thead class="bg-slate-900">
-            <tr>
-              <th class="p-2 text-left">Descrição</th>
-              <th class="p-2 text-left">Unidade</th>
-              <th class="p-2 text-left">Qtd Atual</th>
-            </tr>
-          </thead>
-          <tbody id="estoque-tabela"></tbody>
-        </table>
-      </div>
-
-      <div id="pedidos" class="hidden">
-        <h1 class="text-xl font-semibold mb-4">Pedidos</h1>
-        <div id="pedidos-lista"></div>
-      </div>
-    </main>
+<body>
+  <div class="sidebar">
+    <h2>SALEH</h2>
+    <button onclick="mostrar('estoque')">📦 Estoque</button>
+    <button onclick="mostrar('pratos')">🍽 Pratos</button>
+    <button onclick="mostrar('cozinha')">🔥 Cozinha</button>
+    <button onclick="mostrar('relatorios')">📊 Relatórios</button>
   </div>
 
-<script>
-const API = "https://saleh-digital-api.onrender.com";
+  <div class="content">
+    <h1 id="titulo">Painel Saleh Digital</h1>
+    <div id="area"></div>
+  </div>
 
-function showTab(tab) {
-  document.getElementById("estoque").classList.add("hidden");
-  document.getElementById("pedidos").classList.add("hidden");
-  document.getElementById(tab).classList.remove("hidden");
-}
-
-async function carregarEstoque() {
-  const res = await fetch(`${API}/products`);
-  const dados = await res.json();
-
-  const tabela = document.getElementById("estoque-tabela");
-  tabela.innerHTML = "";
-
-  dados.forEach(p => {
-    tabela.innerHTML += `
-      <tr class="border-t border-slate-800">
-        <td class="p-2">${p.description}</td>
-        <td class="p-2">${p.unit}</td>
-        <td class="p-2">${p.currentQuantity}</td>
-      </tr>
-    `;
-  });
-}
-
-carregarEstoque();
-</script>
+  <script src="script.js"></script>
 </body>
 </html>
