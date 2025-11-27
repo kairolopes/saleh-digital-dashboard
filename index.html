@@ -11,7 +11,6 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    /* Scroll bonito na tabela */
     .scrollbar-thin::-webkit-scrollbar {
       width: 6px;
       height: 6px;
@@ -63,9 +62,7 @@
       <!-- Topbar -->
       <header class="h-16 border-b border-slate-800 flex items-center justify-between px-4 md:px-8 bg-slate-950/90 backdrop-blur">
         <div class="flex items-center gap-3">
-          <div class="md:hidden">
-            <!-- (poderia ter menu móvel depois) -->
-          </div>
+          <div class="md:hidden"></div>
           <div>
             <div class="text-sm text-slate-400">Dashboard</div>
             <h1 class="text-lg md:text-xl font-semibold text-slate-50">Painel de Gestão Saleh Digital</h1>
@@ -112,7 +109,6 @@
           </div>
         </div>
 
-        <!-- CONTEÚDO DAS ABAS -->
         <!-- ABA ESTOQUE -->
         <div id="tab-estoque" class="space-y-6">
           <div class="flex flex-col md:flex-row md:items-center gap-3 justify-between">
@@ -125,7 +121,7 @@
             </button>
           </div>
 
-          <!-- Formulário de produto (toggle) -->
+          <!-- Formulário de produto -->
           <div id="product-form-container" class="rounded-2xl bg-slate-950 border border-slate-800 p-4 md:p-5 hidden">
             <div class="flex items-center justify-between mb-3">
               <div>
@@ -196,7 +192,7 @@
             </form>
           </div>
 
-          <!-- Barra de busca + filtros -->
+          <!-- Barra de busca -->
           <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div class="flex items-center gap-2">
               <div class="relative">
@@ -206,7 +202,7 @@
               </div>
             </div>
             <div class="text-xs text-slate-500">
-              Clique em <span class="font-semibold text-amber-400">“Registrar compra”</span> para atualizar estoque e histórico.
+              Clique em <span class="font-semibold text-amber-400">“Registrar”</span> para atualizar estoque e histórico.
             </div>
           </div>
 
@@ -218,8 +214,8 @@
                   <tr>
                     <th class="text-left px-4 py-2 text-xs font-semibold text-slate-400">Descrição</th>
                     <th class="text-left px-4 py-2 text-xs font-semibold text-slate-400">Unidade</th>
-                    <th class="text-left px-4 py-2 text-xs font-semibold text-slate-400">Valor un. (R$)</th>
-                    <th class="text-left px-4 py-2 text-xs font-semibold text-slate-400">Qtd. atual</th>
+                    <th class="text-right px-4 py-2 text-xs font-semibold text-slate-400">Valor un. (R$)</th>
+                    <th class="text-right px-4 py-2 text-xs font-semibold text-slate-400">Qtd. atual</th>
                     <th class="text-left px-4 py-2 text-xs font-semibold text-slate-400">Local</th>
                     <th class="text-right px-4 py-2 text-xs font-semibold text-slate-400">Ações</th>
                   </tr>
@@ -246,7 +242,7 @@
           </div>
         </div>
 
-        <!-- ABA PEDIDOS (apenas visualização simples por enquanto) -->
+        <!-- ABA PEDIDOS -->
         <div id="tab-pedidos" class="space-y-4 hidden">
           <div class="flex items-center justify-between">
             <div>
@@ -302,7 +298,7 @@
             <li>Cadastro e listagem de insumos em <code>/products</code>.</li>
             <li>Histórico de compras e estoque em <code>/products/:id/purchase</code> e <code>/products/:id/history</code>.</li>
             <li>Pedidos de mesa, app e Nicochat em <code>/orders</code>.</li>
-            <li>Clientes (CRM simples) em <code>/customers</code> e <code>/customers/:phone</code>.</li>
+            <li>Clientes (CRM simples) em <code>/customers</code> e <code>/customers/:phone</code> (para ligar depois).</li>
           </ul>
           <p class="text-xs text-slate-500">
             Próximos passos: tela de histórico detalhado, custos por prato, relatórios por período e integração visual com Nicochat.
@@ -408,7 +404,7 @@
       try {
         const res = await fetch(API_BASE + "/");
         if (!res.ok) throw new Error("Status não OK");
-        const text = await res.text();
+        await res.text();
         apiStatusText.textContent = "Online";
         cardApiStatus.textContent = "API em funcionamento";
         cardApiStatus.classList.remove("text-slate-400");
@@ -473,30 +469,26 @@
         const currentQty = Number(p.currentQuantity || 0);
         const unitPrice = Number(p.unitPrice || 0);
 
-tr.innerHTML = `
-  <td class="px-4 py-3 text-sm">${p.description || "-"}</td>
-  <td class="px-4 py-3 text-sm">${p.unit || "-"}</td>
-  <td class="px-4 py-3 text-sm text-right">R$ ${unitPrice.toFixed(2)}</td>
-  <td class="px-4 py-3 text-sm text-right">${currentQty.toFixed(2)}</td>
-  <td class="px-4 py-3 text-xs text-slate-400">${p.location || "-"}</td>
-
-  <td class="px-4 py-3 text-right text-xs whitespace-nowrap align-middle">
-  <span class="cursor-pointer hover:underline text-amber-400" data-action="purchase" data-id="${p.id}">
-    Registrar
-  </span>
-  •
-  <span class="cursor-pointer hover:underline text-slate-300" data-action="edit" data-id="${p.id}">
-    Editar
-  </span>
-  •
-  <span class="cursor-pointer hover:underline text-slate-400" data-action="history" data-id="${p.id}">
-    Histórico
-  </span>
-</td>
-
-`;
-
-
+        tr.innerHTML = `
+          <td class="px-4 py-3 text-sm">${p.description || "-"}</td>
+          <td class="px-4 py-3 text-sm">${p.unit || "-"}</td>
+          <td class="px-4 py-3 text-sm text-right">R$ ${unitPrice.toFixed(2)}</td>
+          <td class="px-4 py-3 text-sm text-right">${currentQty.toFixed(2)}</td>
+          <td class="px-4 py-3 text-xs text-slate-400">${p.location || "-"}</td>
+          <td class="px-4 py-3 text-right text-xs whitespace-nowrap">
+            <span class="cursor-pointer hover:underline text-amber-400 font-medium" data-action="purchase" data-id="${p.id}">
+              Registrar
+            </span>
+            <span class="text-slate-600 mx-1">•</span>
+            <span class="cursor-pointer hover:underline text-slate-200" data-action="edit" data-id="${p.id}">
+              Editar
+            </span>
+            <span class="text-slate-600 mx-1">•</span>
+            <span class="cursor-pointer hover:underline text-slate-400" data-action="history" data-id="${p.id}">
+              Histórico
+            </span>
+          </td>
+        `;
 
         productsTableBody.appendChild(tr);
       });
@@ -558,137 +550,125 @@ tr.innerHTML = `
       }
     }
 
+    // clique nos links de ação
+    productsTableBody.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-action]");
+      if (!btn) return;
 
-productsTableBody.addEventListener("click", (e) => {
-  const btn = e.target.closest("[data-action]");
-  if (!btn) return;
+      const action = btn.getAttribute("data-action");
+      const id = btn.getAttribute("data-id");
+      if (!id) return;
 
-  const action = btn.getAttribute("data-action");
-  const id = btn.getAttribute("data-id");
-  if (!id) return;
-
-  if (action === "purchase") {
-    handlePurchase(id);
-  } else if (action === "edit") {
-    handleEditProduct(id);
-  } else if (action === "history") {
-    handleShowHistory(id);
-  }
-});
-
-
-// ✏️ Editar dados básicos do produto (por enquanto, só descrição)
-async function handleEditProduct(productId) {
-  // pega o produto da lista em memória
-  const product = allProducts.find(p => p.id === productId);
-  if (!product) {
-    alert("Produto não encontrado na lista carregada.");
-    return;
-  }
-
-  const novaDescricao = prompt(
-    "Nova descrição para o produto:",
-    product.description || ""
-  );
-
-  if (!novaDescricao || novaDescricao.trim() === "") {
-    // usuário cancelou ou deixou vazio
-    return;
-  }
-
-  try {
-    const res = await fetch(`${API_BASE}/products/${productId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ description: novaDescricao.trim() })
+      if (action === "purchase") {
+        handlePurchase(id);
+      } else if (action === "edit") {
+        handleEditProduct(id);
+      } else if (action === "history") {
+        handleShowHistory(id);
+      }
     });
 
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error("Erro ao editar produto:", errText);
-      alert("Erro ao editar produto. Veja o console para detalhes.");
-      return;
+    // ✏️ Editar produto (por enquanto, só descrição)
+    async function handleEditProduct(productId) {
+      const product = allProducts.find(p => p.id === productId);
+      if (!product) {
+        alert("Produto não encontrado na lista carregada.");
+        return;
+      }
+
+      const novaDescricao = prompt(
+        "Nova descrição para o produto:",
+        product.description || ""
+      );
+
+      if (!novaDescricao || novaDescricao.trim() === "") {
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/products/${productId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ description: novaDescricao.trim() })
+        });
+
+        if (!res.ok) {
+          const errText = await res.text();
+          console.error("Erro ao editar produto:", errText);
+          alert("Erro ao editar produto. Veja o console para detalhes.");
+          return;
+        }
+
+        alert("Produto atualizado com sucesso!");
+        await loadProducts();
+      } catch (err) {
+        console.error("Erro na requisição de edição:", err);
+        alert("Erro de conexão ao editar produto.");
+      }
     }
 
-    alert("Produto atualizado com sucesso!");
-    await loadProducts(); // recarrega a lista
-  } catch (err) {
-    console.error("Erro na requisição de edição:", err);
-    alert("Erro de conexão ao editar produto.");
-  }
-}
+    // 📜 Histórico de compras do produto
+    async function handleShowHistory(productId) {
+      try {
+        const res = await fetch(`${API_BASE}/products/${productId}/history`);
+        if (!res.ok) {
+          const errText = await res.text();
+          console.error("Erro ao buscar histórico:", errText);
+          alert("Erro ao buscar histórico de compras.");
+          return;
+        }
 
-// 📜 Mostrar histórico de compras do produto (preço atual, anterior e média)
-async function handleShowHistory(productId) {
-  try {
-    const res = await fetch(`${API_BASE}/products/${productId}/history`);
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error("Erro ao buscar histórico:", errText);
-      alert("Erro ao buscar histórico de compras.");
-      return;
+        const data = await res.json();
+        const product = data.product || {};
+        const purchases = Array.isArray(data.purchases) ? data.purchases : [];
+        const avg = data.averageLast4UnitPrice;
+
+        if (purchases.length === 0) {
+          alert("Nenhuma compra registrada para este produto.");
+          return;
+        }
+
+        // preço atual = última compra; anterior = penúltima
+        const last = purchases[0];
+        const previous = purchases[1];
+
+        let texto = "";
+        texto += `Produto: ${product.description || "-"}\n`;
+        texto += `Unidade: ${product.unit || "-"}\n\n`;
+
+        texto += "Histórico de compras (da mais recente para a mais antiga):\n\n";
+        purchases.forEach((h, idx) => {
+          const qtd = Number(h.quantity || 0);
+          const total = Number(h.totalPrice || 0);
+          const unit = Number(h.unitPrice || 0);
+          const dataCompra = h.purchaseDate || h.date || "";
+
+          texto += `#${idx + 1}\n`;
+          texto += `Data: ${dataCompra}\n`;
+          texto += `Quantidade: ${qtd}\n`;
+          texto += `Valor total: R$ ${total.toFixed(2)}\n`;
+          texto += `Valor unitário: R$ ${unit.toFixed(2)}\n`;
+          texto += "-----------------------------\n";
+        });
+
+        texto += "\nResumo de preços:\n";
+        if (last && last.unitPrice != null) {
+          texto += `Preço atual (última compra): R$ ${Number(last.unitPrice).toFixed(2)}\n`;
+        }
+        if (previous && previous.unitPrice != null) {
+          texto += `Preço anterior (penúltima compra): R$ ${Number(previous.unitPrice).toFixed(2)}\n`;
+        }
+        if (avg != null) {
+          texto += `Média das últimas 4 compras: R$ ${Number(avg).toFixed(2)}\n`;
+        }
+
+        alert(texto);
+      } catch (err) {
+        console.error("Erro na requisição de histórico:", err);
+        alert("Erro de conexão ao buscar histórico.");
+      }
     }
 
-    const data = await res.json();
-
-    // Se vier array direto, usa; se vier { product, purchases, averageLast4UnitPrice }, pega de lá
-    const history = Array.isArray(data) ? data : (data.purchases || []);
-    const product = Array.isArray(data) ? null : (data.product || null);
-    const avg = Array.isArray(data) ? null : (data.averageLast4UnitPrice ?? null);
-
-    if (!Array.isArray(history) || history.length === 0) {
-      alert("Nenhuma compra registrada para este produto.");
-      return;
-    }
-
-    // Última e penúltima compra
-    const ultima = history[0];
-    const penultima = history[1] || null;
-
-    const precoAtual = Number(ultima.unitPrice || 0);
-    const precoAnterior = penultima ? Number(penultima.unitPrice || 0) : null;
-
-    let texto = "";
-
-    if (product) {
-      texto += `Produto: ${product.description || "-"}\n\n`;
-    }
-
-    texto += `Preço atual (última compra): R$ ${precoAtual.toFixed(2)}\n`;
-    if (precoAnterior !== null) {
-      texto += `Preço anterior: R$ ${precoAnterior.toFixed(2)}\n`;
-    } else {
-      texto += `Preço anterior: (não há compra anterior)\n`;
-    }
-
-    if (avg !== null) {
-      texto += `Média das últimas 4 compras: R$ ${avg.toFixed(2)}\n`;
-    }
-    texto += "\n-----------------------------\n\n";
-    texto += "Histórico de compras:\n\n";
-
-    history.forEach((h) => {
-      const qtd = Number(h.quantity || 0);
-      const total = Number(h.totalPrice || 0);
-      const unit = qtd > 0 ? total / qtd : 0;
-      const dataCompra = h.purchaseDate || h.date || "";
-
-      texto += `Data: ${dataCompra}\n`;
-      texto += `Quantidade: ${qtd}\n`;
-      texto += `Valor total: R$ ${total.toFixed(2)}\n`;
-      texto += `Valor unitário: R$ ${unit.toFixed(2)}\n`;
-      texto += "-----------------------------\n";
-    });
-
-    alert(texto);
-  } catch (err) {
-    console.error("Erro na requisição de histórico:", err);
-    alert("Erro de conexão ao buscar histórico.");
-  }
-}
-
-
-    
     // -----------------------------
     // Submeter formulário de novo produto
     // -----------------------------
@@ -749,7 +729,7 @@ async function handleShowHistory(productId) {
     });
 
     // -----------------------------
-    // Carregar pedidos (para aba pedidos)
+    // Carregar pedidos
     // -----------------------------
     async function loadOrders() {
       const status = ordersStatusFilter.value;
@@ -758,7 +738,9 @@ async function handleShowHistory(productId) {
         const data = await res.json();
         const orders = Array.isArray(data) ? data : [];
         renderOrdersTable(orders);
-        cardPendingOrders.textContent = status === "pendente" ? orders.length.toString() : cardPendingOrders.textContent;
+        if (status === "pendente") {
+          cardPendingOrders.textContent = orders.length.toString();
+        }
       } catch (err) {
         console.error("Erro ao carregar pedidos:", err);
       }
@@ -798,7 +780,6 @@ async function handleShowHistory(productId) {
             </span>
           </td>
           <td class="px-4 py-2 align-top text-right">
-            <!-- Aqui depois dá pra colocar botões de mudar status -->
           </td>
         `;
         ordersTableBody.appendChild(tr);
