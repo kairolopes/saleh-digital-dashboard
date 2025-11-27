@@ -617,7 +617,7 @@ async function handleEditProduct(productId) {
   }
 }
 
-// 📜 Mostrar histórico de compras do produto
+// 📜 Mostrar histórico de compras do produto (com média das últimas 4)
 async function handleShowHistory(productId) {
   try {
     const res = await fetch(`${API_BASE}/products/${productId}/history`);
@@ -628,22 +628,32 @@ async function handleShowHistory(productId) {
       return;
     }
 
-    const history = await res.json();
+    const data = await res.json();
+
+    // Se a API devolver array direto, usa ele.
+    // Se devolver { purchases, averageLast4UnitPrice }, pega de lá.
+    const history = Array.isArray(data) ? data : (data.purchases || []);
+    const avg = Array.isArray(data) ? null : (data.averageLast4UnitPrice ?? null);
 
     if (!Array.isArray(history) || history.length === 0) {
       alert("Nenhuma compra registrada para este produto.");
       return;
     }
 
-    // monta um texto simples com data, quantidade e valor
     let texto = "Histórico de compras:\n\n";
+
+    // Se vier média, mostra no topo
+    if (avg !== null) {
+      texto += `Média das últimas 4 compras: R$ ${avg.toFixed(2)}\n\n`;
+    }
+
     history.forEach((h) => {
       const qtd = Number(h.quantity || 0);
       const total = Number(h.totalPrice || 0);
       const unit = qtd > 0 ? total / qtd : 0;
-      const data = h.purchaseDate || h.date || "";
+      const dataCompra = h.purchaseDate || h.date || "";
 
-      texto += `Data: ${data}\n`;
+      texto += `Data: ${dataCompra}\n`;
       texto += `Quantidade: ${qtd}\n`;
       texto += `Valor total: R$ ${total.toFixed(2)}\n`;
       texto += `Valor unitário: R$ ${unit.toFixed(2)}\n`;
