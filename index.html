@@ -480,19 +480,20 @@ tr.innerHTML = `
   <td class="px-4 py-3 text-sm text-right">${currentQty.toFixed(2)}</td>
   <td class="px-4 py-3 text-xs text-slate-400">${p.location || "-"}</td>
 
-  <td class="px-4 py-3 text-right text-xs whitespace-nowrap text-amber-400 font-medium">
-    <span class="cursor-pointer hover:underline" data-action="purchase" data-id="${p.id}">
-      Registrar
-    </span>
-    •
-    <span class="cursor-pointer hover:underline text-slate-300" data-action="edit" data-id="${p.id}">
-      Editar
-    </span>
-    •
-    <span class="cursor-pointer hover:underline text-slate-400" data-action="history" data-id="${p.id}">
-      Histórico
-    </span>
-  </td>
+  <td class="px-4 py-3 text-right text-xs whitespace-nowrap align-middle">
+  <span class="cursor-pointer hover:underline text-amber-400" data-action="purchase" data-id="${p.id}">
+    Registrar
+  </span>
+  •
+  <span class="cursor-pointer hover:underline text-slate-300" data-action="edit" data-id="${p.id}">
+    Editar
+  </span>
+  •
+  <span class="cursor-pointer hover:underline text-slate-400" data-action="history" data-id="${p.id}">
+    Histórico
+  </span>
+</td>
+
 `;
 
 
@@ -617,7 +618,7 @@ async function handleEditProduct(productId) {
   }
 }
 
-// 📜 Mostrar histórico de compras do produto (com média das últimas 4)
+// 📜 Mostrar histórico de compras do produto (preço atual, anterior e média)
 async function handleShowHistory(productId) {
   try {
     const res = await fetch(`${API_BASE}/products/${productId}/history`);
@@ -630,9 +631,9 @@ async function handleShowHistory(productId) {
 
     const data = await res.json();
 
-    // Se a API devolver array direto, usa ele.
-    // Se devolver { purchases, averageLast4UnitPrice }, pega de lá.
+    // Se vier array direto, usa; se vier { product, purchases, averageLast4UnitPrice }, pega de lá
     const history = Array.isArray(data) ? data : (data.purchases || []);
+    const product = Array.isArray(data) ? null : (data.product || null);
     const avg = Array.isArray(data) ? null : (data.averageLast4UnitPrice ?? null);
 
     if (!Array.isArray(history) || history.length === 0) {
@@ -640,12 +641,31 @@ async function handleShowHistory(productId) {
       return;
     }
 
-    let texto = "Histórico de compras:\n\n";
+    // Última e penúltima compra
+    const ultima = history[0];
+    const penultima = history[1] || null;
 
-    // Se vier média, mostra no topo
-    if (avg !== null) {
-      texto += `Média das últimas 4 compras: R$ ${avg.toFixed(2)}\n\n`;
+    const precoAtual = Number(ultima.unitPrice || 0);
+    const precoAnterior = penultima ? Number(penultima.unitPrice || 0) : null;
+
+    let texto = "";
+
+    if (product) {
+      texto += `Produto: ${product.description || "-"}\n\n`;
     }
+
+    texto += `Preço atual (última compra): R$ ${precoAtual.toFixed(2)}\n`;
+    if (precoAnterior !== null) {
+      texto += `Preço anterior: R$ ${precoAnterior.toFixed(2)}\n`;
+    } else {
+      texto += `Preço anterior: (não há compra anterior)\n`;
+    }
+
+    if (avg !== null) {
+      texto += `Média das últimas 4 compras: R$ ${avg.toFixed(2)}\n`;
+    }
+    texto += "\n-----------------------------\n\n";
+    texto += "Histórico de compras:\n\n";
 
     history.forEach((h) => {
       const qtd = Number(h.quantity || 0);
