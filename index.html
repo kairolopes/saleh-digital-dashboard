@@ -559,7 +559,7 @@ tr.innerHTML = `
 
 
 productsTableBody.addEventListener("click", (e) => {
-  const btn = e.target.closest("button[data-action]");
+  const btn = e.target.closest("[data-action]");
   if (!btn) return;
 
   const action = btn.getAttribute("data-action");
@@ -574,6 +574,7 @@ productsTableBody.addEventListener("click", (e) => {
     handleShowHistory(id);
   }
 });
+
 
 // ✏️ Editar dados básicos do produto (por enquanto, só descrição)
 async function handleEditProduct(productId) {
