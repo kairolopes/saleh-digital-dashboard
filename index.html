@@ -1210,51 +1210,48 @@
       }
     }
 
-    function renderOrdersTable(orders) {
-      ordersTableBody.innerHTML = "";
-      if (orders.length === 0) {
-        ordersTableBody.innerHTML = `
-          <tr>
-            <td colspan="5" class="px-4 py-4 text-xs text-slate-500 text-center">
-              Nenhum pedido encontrado para este status.
-            </td>
-          </tr>
-        `;
-        ordersCount.textContent = "0";
-        return;
-      }
+function renderOrdersTable(orders) {
+  ordersTableBody.innerHTML = "";
+  if (orders.length === 0) {
+    ordersTableBody.innerHTML = `
+      <tr>
+        <td colspan="5" class="px-4 py-4 text-xs text-slate-500 text-center">
+          Nenhum pedido encontrado para este status.
+        </td>
+      </tr>
+    `;
+    ordersCount.textContent = "0";
+    return;
+  }
 
-      orders.forEach(o => {
-        const tr = document.createElement("tr");
-        tr.className = "hover:bg-slate-900/60 text-xs";
-        const itemsText = Array.isArray(o.items)
-          ? o.items.map(i => \`\${i.qty}x \${i.name}\`).join(", ")
-          : "-";
+  orders.forEach(o => {
+    const tr = document.createElement("tr");
+    tr.className = "hover:bg-slate-900/60 text-xs";
 
-        tr.innerHTML = `
-          <td class="px-4 py-2 align-top">
-            <div class="font-medium text-slate-100">${o.tableNumber || "-"}</div>
-            <div class="text-[11px] text-slate-500">${o.channel || "-"}</div>
-          </td>
-          <td class="px-4 py-2 align-top">${o.customerName || "-"}</td>
-          <td class="px-4 py-2 align-top">${itemsText}</td>
-          <td class="px-4 py-2 align-top">
-            <span class="px-2 py-1 rounded-full text-[10px] bg-slate-900 border border-slate-700 text-slate-200">
-              ${o.status}
-            </span>
-          </td>
-          <td class="px-4 py-2 align-top text-right"></td>
-        `;
-        ordersTableBody.appendChild(tr);
-      });
+    const itemsText = Array.isArray(o.items)
+      ? o.items.map(i => `${i.qty}x ${i.name}`).join(", ")
+      : "-";
 
-      ordersCount.textContent = orders.length.toString();
-    }
+    tr.innerHTML = `
+      <td class="px-4 py-2 align-top">
+        <div class="font-medium text-slate-100">${o.tableNumber || "-"}</div>
+        <div class="text-[11px] text-slate-500">${o.channel || "-"}</div>
+      </td>
+      <td class="px-4 py-2 align-top">${o.customerName || "-"}</td>
+      <td class="px-4 py-2 align-top">${itemsText}</td>
+      <td class="px-4 py-2 align-top">
+        <span class="px-2 py-1 rounded-full text-[10px] bg-slate-900 border border-slate-700 text-slate-200">
+          ${o.status}
+        </span>
+      </td>
+      <td class="px-4 py-2 align-top text-right"></td>
+    `;
+    ordersTableBody.appendChild(tr);
+  });
 
-    ordersStatusFilter.addEventListener("change", () => {
-      loadOrders();
-    });
-
+  ordersCount.textContent = orders.length.toString();
+}
+    
     // -----------------------------
     // Gráfico de estoque
     // -----------------------------
