@@ -39,25 +39,23 @@
         </div>
       </div>
 
-<nav class="flex-1 px-4 py-4 space-y-1">
-  <button id="menu-estoque" class="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium bg-slate-800 text-amber-400">
-    <span>📦</span> <span>Estoque</span>
-  </button>
+      <nav class="flex-1 px-4 py-4 space-y-1">
+        <button id="menu-estoque" class="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium bg-slate-800 text-amber-400">
+          <span>📦</span> <span>Estoque</span>
+        </button>
 
-  <button id="menu-pedidos" class="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-slate-300 hover:bg-slate-800/60">
-    <span>🧾</span> <span>Pedidos (visualização)</span>
-  </button>
+        <button id="menu-pedidos" class="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-slate-300 hover:bg-slate-800/60">
+          <span>🧾</span> <span>Pedidos (visualização)</span>
+        </button>
 
-  <button id="menu-crm" class="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-slate-300 hover:bg-slate-800/60">
-    <span>👤</span> <span>CRM / Clientes</span>
-  </button>
+        <button id="menu-crm" class="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-slate-300 hover:bg-slate-800/60">
+          <span>👤</span> <span>CRM / Clientes</span>
+        </button>
 
-  <button id="menu-sobre" class="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-slate-300 hover:bg-slate-800/60">
-    <span>⚙️</span> <span>Sobre / Ajuda</span>
-  </button>
-</nav>
-
-
+        <button id="menu-sobre" class="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-slate-300 hover:bg-slate-800/60">
+          <span>⚙️</span> <span>Sobre / Ajuda</span>
+        </button>
+      </nav>
 
       <div class="px-6 py-4 border-t border-slate-800 text-xs text-slate-500">
         API conectada ao Firebase<br/>
@@ -294,7 +292,7 @@
           </p>
         </div>
 
-                <!-- ABA CRM -->
+        <!-- ABA CRM -->
         <div id="tab-crm" class="space-y-4 hidden">
           <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div>
@@ -379,8 +377,6 @@
           </div>
         </div>
 
-
-        
         <!-- ABA SOBRE -->
         <div id="tab-sobre" class="space-y-3 hidden text-sm text-slate-300">
           <h2 class="text-lg font-semibold text-slate-50">Sobre o painel</h2>
@@ -400,7 +396,9 @@
           </p>
         </div>
 
-
+      </section>
+    </main>
+  </div>
 
   <!-- MODAL: Histórico de compras -->
   <div id="history-modal"
@@ -445,951 +443,932 @@
     </div>
   </div>
 
-  
-<script>
-// 🔗 URL da sua API no Render
-const API_BASE = "https://saleh-digital-api.onrender.com";
+  <!-- 📊 MODAL DE RELATÓRIOS / BI DO PRODUTO -->
+  <div
+    id="report-modal"
+    class="hidden fixed inset-0 z-50 bg-black/70 flex items-center justify-center px-2 sm:px-4"
+  >
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden shadow-2xl flex flex-col">
+      <!-- Cabeçalho -->
+      <div class="px-4 sm:px-6 py-3 border-b border-slate-700 flex items-center justify-between">
+        <div>
+          <h2 class="text-sm sm:text-base font-semibold text-slate-100">
+            Relatórios do produto
+            <span id="rep-product-name" class="text-amber-300"></span>
+            <span id="rep-product-unit" class="text-slate-400 text-xs"></span>
+          </h2>
+          <p class="text-[11px] text-slate-400">
+            Histórico de compras, variação de preços, média das últimas compras e série temporal.
+          </p>
+        </div>
+        <button
+          id="report-close"
+          class="w-7 h-7 flex items-center justify-center rounded-full hover:bg-slate-800 text-slate-300 text-sm"
+        >
+          ✕
+        </button>
+      </div>
 
-// Referências de elementos
-const apiStatusText = document.getElementById("api-status-text");
-const cardApiStatus = document.getElementById("card-api-status");
-const cardApiUrl = document.getElementById("card-api-url");
-const cardTotalProducts = document.getElementById("card-total-products");
-const cardPendingOrders = document.getElementById("card-pending-orders");
-const aboutApiUrl = document.getElementById("about-api-url");
+      <!-- Conteúdo -->
+      <div class="flex-1 overflow-auto p-4 sm:p-6 space-y-4">
+        <!-- Linha de cards-resumo -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div class="bg-slate-900/70 border border-slate-700 rounded-xl p-3">
+            <p class="text-[11px] text-slate-400">Último preço</p>
+            <p id="rep-last-price" class="text-sm font-semibold text-emerald-400 mt-1">
+              R$ 0,00
+            </p>
+            <p id="rep-last-date" class="text-[11px] text-slate-500 mt-1">
+              –
+            </p>
+            <p id="rep-last-supplier" class="text-[10px] text-slate-500 mt-1">
+              Fornecedor: –
+            </p>
+          </div>
 
-const tabEstoque = document.getElementById("tab-estoque");
-const tabPedidos = document.getElementById("tab-pedidos");
-const tabSobre = document.getElementById("tab-sobre");
-const tabCrm = document.getElementById("tab-crm");
+          <div class="bg-slate-900/70 border border-slate-700 rounded-xl p-3">
+            <p class="text-[11px] text-slate-400">Preço anterior</p>
+            <p id="rep-prev-price" class="text-sm font-semibold text-slate-100 mt-1">
+              –
+            </p>
+            <p id="rep-prev-date" class="text-[11px] text-slate-500 mt-1">
+              –
+            </p>
+          </div>
 
-const btnMenuEstoque = document.getElementById("menu-estoque");
-const btnMenuPedidos = document.getElementById("menu-pedidos");
-const btnMenuSobre = document.getElementById("menu-sobre");
-const btnMenuCrm = document.getElementById("menu-crm");
+          <div class="bg-slate-900/70 border border-slate-700 rounded-xl p-3">
+            <p class="text-[11px] text-slate-400">Média das últimas 4 compras</p>
+            <p id="rep-avg4" class="text-sm font-semibold text-sky-300 mt-1">
+              –
+            </p>
+            <p id="rep-total-purchases" class="text-[11px] text-slate-500 mt-1">
+              –
+            </p>
+          </div>
 
-const btnOpenProductForm = document.getElementById("btn-open-product-form");
-const btnCloseProductForm = document.getElementById("btn-close-product-form");
-const btnCancelProduct = document.getElementById("btn-cancel-product");
-const productFormContainer = document.getElementById("product-form-container");
-const productForm = document.getElementById("product-form");
+          <div class="bg-slate-900/70 border border-slate-700 rounded-xl p-3">
+            <p class="text-[11px] text-slate-400">Tendência do preço</p>
+            <p id="rep-trend" class="text-sm font-semibold mt-1">
+              –
+            </p>
+            <p id="rep-chart-meta" class="text-[11px] text-slate-500 mt-1">
+              –
+            </p>
+          </div>
+        </div>
 
-const productsTableBody = document.getElementById("products-table-body");
-const productsCount = document.getElementById("products-count");
-const searchProductsInput = document.getElementById("search-products");
+        <!-- Gráfico -->
+        <div class="bg-slate-900/70 border border-slate-700 rounded-xl p-3 sm:p-4 h-64 sm:h-72 flex flex-col">
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-[11px] text-slate-400">
+              Série temporal do preço unitário (todas as compras)
+            </p>
+          </div>
+          <div class="flex-1">
+            <canvas id="rep-price-chart"></canvas>
+          </div>
+        </div>
 
-const ordersStatusFilter = document.getElementById("orders-status-filter");
-const ordersTableBody = document.getElementById("orders-table-body");
-const ordersCount = document.getElementById("orders-count");
+        <!-- Tabela de histórico detalhado -->
+        <div class="bg-slate-900/70 border border-slate-700 rounded-xl overflow-hidden">
+          <div class="px-3 py-2 border-b border-slate-700 flex items-center justify-between">
+            <p class="text-[11px] text-slate-400">
+              Histórico de compras detalhado (da mais recente para a mais antiga)
+            </p>
+          </div>
+          <div class="max-h-64 overflow-auto">
+            <table class="min-w-full text-[11px]">
+              <thead class="bg-slate-950/60 text-slate-400">
+                <tr>
+                  <th class="px-2 py-2 text-left font-medium">Data</th>
+                  <th class="px-2 py-2 text-right font-medium">Quantidade</th>
+                  <th class="px-2 py-2 text-right font-medium">Preço unitário</th>
+                  <th class="px-2 py-2 text-right font-medium">Valor total</th>
+                  <th class="px-2 py-2 text-left font-medium">Fornecedor</th>
+                  <th class="px-2 py-2 text-right font-medium">Estoque após</th>
+                </tr>
+              </thead>
+              <tbody id="rep-history-body" class="divide-y divide-slate-800">
+                <!-- linhas preenchidas via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
 
-// ---- CRM ----
-const crmForm = document.getElementById("crm-form");
-const crmName = document.getElementById("crm-name");
-const crmPhone = document.getElementById("crm-phone");
-const crmChannel = document.getElementById("crm-channel");
-const crmNotes = document.getElementById("crm-notes");
-
-const searchCustomersInput = document.getElementById("search-customers");
-const customersTableBody = document.getElementById("customers-table-body");
-const customersCount = document.getElementById("customers-count");
-
-// --------- elementos do modal de histórico ---------
-const historyModal = document.getElementById("history-modal");
-const historyModalClose = document.getElementById("history-modal-close");
-const historyProductName = document.getElementById("history-product-name");
-const historyTableBody = document.getElementById("history-table-body");
-const historyEmptyMessage = document.getElementById("history-empty-message");
-
-// fechar modal no X
-historyModalClose.addEventListener("click", () => {
-  historyModal.classList.add("hidden");
-});
-
-// fechar modal clicando fora da caixa
-historyModal.addEventListener("click", (e) => {
-  if (e.target === historyModal) {
-    historyModal.classList.add("hidden");
-  }
-});
-
-let allProducts = [];
-let stockChart = null;
-let allCustomers = [];
-
-// ==============================
-// 🔄 Navegação entre abas
-// ==============================
-function showTab(tab) {
-  tabEstoque.classList.add("hidden");
-  tabPedidos.classList.add("hidden");
-  tabSobre.classList.add("hidden");
-  tabCrm.classList.add("hidden");
-
-  btnMenuEstoque.classList.remove("bg-slate-800", "text-amber-400");
-  btnMenuEstoque.classList.add("text-slate-300");
-
-  btnMenuPedidos.classList.remove("bg-slate-800", "text-amber-400");
-  btnMenuPedidos.classList.add("text-slate-300");
-
-  btnMenuSobre.classList.remove("bg-slate-800", "text-amber-400");
-  btnMenuSobre.classList.add("text-slate-300");
-
-  btnMenuCrm.classList.remove("bg-slate-800", "text-amber-400");
-  btnMenuCrm.classList.add("text-slate-300");
-
-  if (tab === "estoque") {
-    tabEstoque.classList.remove("hidden");
-    btnMenuEstoque.classList.add("bg-slate-800", "text-amber-400");
-    btnMenuEstoque.classList.remove("text-slate-300");
-  } else if (tab === "pedidos") {
-    tabPedidos.classList.remove("hidden");
-    btnMenuPedidos.classList.add("bg-slate-800", "text-amber-400");
-    btnMenuPedidos.classList.remove("text-slate-300");
-  } else if (tab === "sobre") {
-    tabSobre.classList.remove("hidden");
-    btnMenuSobre.classList.add("bg-slate-800", "text-amber-400");
-    btnMenuSobre.classList.remove("text-slate-300");
-  } else if (tab === "crm") {
-    tabCrm.classList.remove("hidden");
-    btnMenuCrm.classList.add("bg-slate-800", "text-amber-400");
-    btnMenuCrm.classList.remove("text-slate-300");
-  }
-}
-
-btnMenuEstoque.addEventListener("click", () => showTab("estoque"));
-btnMenuPedidos.addEventListener("click", () => {
-  showTab("pedidos");
-  loadOrders();
-});
-btnMenuSobre.addEventListener("click", () => showTab("sobre"));
-btnMenuCrm.addEventListener("click", () => showTab("crm"));
-
-// -----------------------------
-// Abrir / fechar formulário
-// -----------------------------
-function openProductForm() {
-  productFormContainer.classList.remove("hidden");
-}
-function closeProductForm() {
-  productFormContainer.classList.add("hidden");
-}
-
-btnOpenProductForm.addEventListener("click", openProductForm);
-btnCloseProductForm.addEventListener("click", closeProductForm);
-btnCancelProduct.addEventListener("click", closeProductForm);
-
-// -----------------------------
-// Status da API
-// -----------------------------
-async function checkApiStatus() {
-  try {
-    const res = await fetch(API_BASE + "/");
-    if (!res.ok) throw new Error("Status não OK");
-    await res.text();
-    apiStatusText.textContent = "Online";
-    cardApiStatus.textContent = "API em funcionamento";
-    cardApiStatus.classList.remove("text-slate-400");
-    cardApiStatus.classList.add("text-emerald-400");
-  } catch (err) {
-    apiStatusText.textContent = "Offline ou indisponível";
-    cardApiStatus.textContent = "Erro ao conectar na API";
-    cardApiStatus.classList.remove("text-emerald-400");
-    cardApiStatus.classList.add("text-rose-400");
-  }
-  cardApiUrl.textContent = API_BASE;
-  aboutApiUrl.textContent = API_BASE;
-}
-
-// -----------------------------
-// Produtos
-// -----------------------------
-async function loadProducts() {
-  try {
-    const res = await fetch(API_BASE + "/products");
-    const data = await res.json();
-    allProducts = Array.isArray(data) ? data : [];
-    renderProductsTable();
-    cardTotalProducts.textContent = allProducts.length.toString();
-    updateStockChart();
-  } catch (err) {
-    console.error("Erro ao carregar produtos:", err);
-  }
-}
-
-function renderProductsTable() {
-  const term = searchProductsInput.value.toLowerCase();
-  const filtered = allProducts.filter(p => {
-    const desc = (p.description || "").toLowerCase();
-    const unit = (p.unit || "").toLowerCase();
-    const loc = (p.location || "").toLowerCase();
-    return desc.includes(term) || unit.includes(term) || loc.includes(term);
-  });
-
-  productsTableBody.innerHTML = "";
-
-  if (filtered.length === 0) {
-    productsTableBody.innerHTML = `
-      <tr>
-        <td colspan="6" class="px-4 py-4 text-xs text-slate-500 text-center">
-          Nenhum produto encontrado.
-        </td>
-      </tr>
-    `;
-    productsCount.textContent = "0";
-    return;
-  }
-
-  filtered.forEach(p => {
-    const tr = document.createElement("tr");
-    tr.className = "hover:bg-slate-900/60";
-
-    const currentQty = Number(p.currentQuantity || 0);
-    const unitPrice = Number(p.unitPrice || 0);
-
-    tr.innerHTML = `
-      <td class="px-4 py-3 text-sm">${p.description || "-"}</td>
-      <td class="px-4 py-3 text-sm">${p.unit || "-"}</td>
-      <td class="px-4 py-3 text-sm text-right">R$ ${unitPrice.toFixed(2)}</td>
-      <td class="px-4 py-3 text-sm text-right">${currentQty.toFixed(2)}</td>
-      <td class="px-4 py-3 text-xs text-slate-400">${p.location || "-"}</td>
-      <td class="px-4 py-3 text-right text-xs whitespace-nowrap">
-        <span class="cursor-pointer hover:underline text-amber-400 font-medium" data-action="purchase" data-id="${p.id}">
-          Registrar
+      <!-- Rodapé -->
+      <div class="px-4 sm:px-6 py-2 border-t border-slate-800 text-[11px] text-slate-500 flex items-center justify-between">
+        <span>
+          Dica: use estes dados para ajustar o preço de venda de acordo com a tendência de custo.
         </span>
-        <span class="text-slate-600 mx-1">•</span>
-        <span class="cursor-pointer hover:underline text-slate-200" data-action="edit" data-id="${p.id}">
-          Editar
+        <span class="hidden sm:inline">
+          Saleh Digital · BI de compras
         </span>
-        <span class="text-slate-600 mx-1">•</span>
-        <span class="cursor-pointer hover:underline text-slate-400" data-action="history" data-id="${p.id}">
-          Histórico
-        </span>
-        <span class="text-slate-600 mx-1">•</span>
-        <span class="cursor-pointer hover:underline text-sky-400" data-action="report" data-id="${p.id}">
-          Relatórios
-        </span>
-      </td>
-    `;
+      </div>
+    </div>
+  </div>
 
-    productsTableBody.appendChild(tr);
-  });
+  <!-- SCRIPT ÚNICO (DEPOIS DE TODOS OS MODAIS) -->
+  <script>
+    // 🔗 URL da sua API no Render
+    const API_BASE = "https://saleh-digital-api.onrender.com";
 
-  productsCount.textContent = filtered.length.toString();
-}
+    // Referências de elementos
+    const apiStatusText = document.getElementById("api-status-text");
+    const cardApiStatus = document.getElementById("card-api-status");
+    const cardApiUrl = document.getElementById("card-api-url");
+    const cardTotalProducts = document.getElementById("card-total-products");
+    const cardPendingOrders = document.getElementById("card-pending-orders");
+    const aboutApiUrl = document.getElementById("about-api-url");
 
-searchProductsInput.addEventListener("input", () => {
-  renderProductsTable();
-});
+    const tabEstoque = document.getElementById("tab-estoque");
+    const tabPedidos = document.getElementById("tab-pedidos");
+    const tabSobre = document.getElementById("tab-sobre");
+    const tabCrm = document.getElementById("tab-crm");
 
-// Registrar compra
-async function handlePurchase(productId) {
-  const quantityStr = prompt("Quantidade comprada (mesma unidade do produto):");
-  if (!quantityStr) return;
-  const quantity = Number(quantityStr.replace(",", "."));
-  if (isNaN(quantity) || quantity <= 0) {
-    alert("Quantidade inválida.");
-    return;
-  }
+    const btnMenuEstoque = document.getElementById("menu-estoque");
+    const btnMenuPedidos = document.getElementById("menu-pedidos");
+    const btnMenuSobre = document.getElementById("menu-sobre");
+    const btnMenuCrm = document.getElementById("menu-crm");
 
-  const totalStr = prompt("Valor total pago (R$):");
-  if (!totalStr) return;
-  const totalPrice = Number(totalStr.replace(",", "."));
-  if (isNaN(totalPrice) || totalPrice <= 0) {
-    alert("Valor inválido.");
-    return;
-  }
+    const btnOpenProductForm = document.getElementById("btn-open-product-form");
+    const btnCloseProductForm = document.getElementById("btn-close-product-form");
+    const btnCancelProduct = document.getElementById("btn-cancel-product");
+    const productFormContainer = document.getElementById("product-form-container");
+    const productForm = document.getElementById("product-form");
 
-  const dateStr = prompt("Data da compra (AAAA-MM-DD). Deixe em branco para usar a data de hoje:");
-  const today = new Date();
-  const yyyy = today.getFullYear();
-  const mm = String(today.getMonth() + 1).padStart(2, "0");
-  const dd = String(today.getDate()).padStart(2, "0");
-  const purchaseDate = dateStr && dateStr.trim() !== "" ? dateStr.trim() : `${yyyy}-${mm}-${dd}`;
+    const productsTableBody = document.getElementById("products-table-body");
+    const productsCount = document.getElementById("products-count");
+    const searchProductsInput = document.getElementById("search-products");
 
-  try {
-    const res = await fetch(`${API_BASE}/products/${productId}/purchase`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ quantity, totalPrice, purchaseDate })
+    const ordersStatusFilter = document.getElementById("orders-status-filter");
+    const ordersTableBody = document.getElementById("orders-table-body");
+    const ordersCount = document.getElementById("orders-count");
+
+    // ---- CRM ----
+    const crmForm = document.getElementById("crm-form");
+    const crmName = document.getElementById("crm-name");
+    const crmPhone = document.getElementById("crm-phone");
+    const crmChannel = document.getElementById("crm-channel");
+    const crmNotes = document.getElementById("crm-notes");
+
+    const searchCustomersInput = document.getElementById("search-customers");
+    const customersTableBody = document.getElementById("customers-table-body");
+    const customersCount = document.getElementById("customers-count");
+
+    // --------- elementos do modal de histórico ---------
+    const historyModal = document.getElementById("history-modal");
+    const historyModalClose = document.getElementById("history-modal-close");
+    const historyProductName = document.getElementById("history-product-name");
+    const historyTableBody = document.getElementById("history-table-body");
+    const historyEmptyMessage = document.getElementById("history-empty-message");
+
+    historyModalClose.addEventListener("click", () => {
+      historyModal.classList.add("hidden");
     });
 
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error("Erro ao registrar compra:", errText);
-      alert("Erro ao registrar compra. Veja o console para detalhes.");
-      return;
-    }
-
-    alert("Compra registrada com sucesso! Estoque atualizado.");
-    await loadProducts();
-  } catch (err) {
-    console.error("Erro na requisição de compra:", err);
-    alert("Erro de conexão ao registrar compra.");
-  }
-}
-
-// clique nos links de ação
-productsTableBody.addEventListener("click", (e) => {
-  const btn = e.target.closest("[data-action]");
-  if (!btn) return;
-
-  const action = btn.getAttribute("data-action");
-  const id = btn.getAttribute("data-id");
-  if (!id) return;
-
-  if (action === "purchase") {
-    handlePurchase(id);
-  } else if (action === "edit") {
-    handleEditProduct(id);
-  } else if (action === "history") {
-    handleShowHistory(id);
-  } else if (action === "report") {
-    handleShowReport(id);
-  }
-});
-
-// Editar produto
-async function handleEditProduct(productId) {
-  const product = allProducts.find(p => p.id === productId);
-  if (!product) {
-    alert("Produto não encontrado na lista carregada.");
-    return;
-  }
-
-  const novaDescricao = prompt(
-    "Nova descrição para o produto:",
-    product.description || ""
-  );
-
-  if (!novaDescricao || novaDescricao.trim() === "") {
-    return;
-  }
-
-  try {
-    const res = await fetch(`${API_BASE}/products/${productId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ description: novaDescricao.trim() })
+    historyModal.addEventListener("click", (e) => {
+      if (e.target === historyModal) {
+        historyModal.classList.add("hidden");
+      }
     });
 
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error("Erro ao editar produto:", errText);
-      alert("Erro ao editar produto. Veja o console para detalhes.");
-      return;
+    let allProducts = [];
+    let stockChart = null;
+    let allCustomers = [];
+
+    // ==============================
+    // 🔄 Navegação entre abas
+    // ==============================
+    function showTab(tab) {
+      tabEstoque.classList.add("hidden");
+      tabPedidos.classList.add("hidden");
+      tabSobre.classList.add("hidden");
+      tabCrm.classList.add("hidden");
+
+      btnMenuEstoque.classList.remove("bg-slate-800", "text-amber-400");
+      btnMenuEstoque.classList.add("text-slate-300");
+
+      btnMenuPedidos.classList.remove("bg-slate-800", "text-amber-400");
+      btnMenuPedidos.classList.add("text-slate-300");
+
+      btnMenuSobre.classList.remove("bg-slate-800", "text-amber-400");
+      btnMenuSobre.classList.add("text-slate-300");
+
+      btnMenuCrm.classList.remove("bg-slate-800", "text-amber-400");
+      btnMenuCrm.classList.add("text-slate-300");
+
+      if (tab === "estoque") {
+        tabEstoque.classList.remove("hidden");
+        btnMenuEstoque.classList.add("bg-slate-800", "text-amber-400");
+        btnMenuEstoque.classList.remove("text-slate-300");
+      } else if (tab === "pedidos") {
+        tabPedidos.classList.remove("hidden");
+        btnMenuPedidos.classList.add("bg-slate-800", "text-amber-400");
+        btnMenuPedidos.classList.remove("text-slate-300");
+      } else if (tab === "sobre") {
+        tabSobre.classList.remove("hidden");
+        btnMenuSobre.classList.add("bg-slate-800", "text-amber-400");
+        btnMenuSobre.classList.remove("text-slate-300");
+      } else if (tab === "crm") {
+        tabCrm.classList.remove("hidden");
+        btnMenuCrm.classList.add("bg-slate-800", "text-amber-400");
+        btnMenuCrm.classList.remove("text-slate-300");
+      }
     }
 
-    alert("Produto atualizado com sucesso!");
-    await loadProducts();
-  } catch (err) {
-    console.error("Erro na requisição de edição:", err);
-    alert("Erro de conexão ao editar produto.");
-  }
-}
+    btnMenuEstoque.addEventListener("click", () => showTab("estoque"));
+    btnMenuPedidos.addEventListener("click", () => {
+      showTab("pedidos");
+      loadOrders();
+    });
+    btnMenuSobre.addEventListener("click", () => showTab("sobre"));
+    btnMenuCrm.addEventListener("click", () => showTab("crm"));
 
-// Histórico em modal
-async function handleShowHistory(productId) {
-  try {
-    const res = await fetch(`${API_BASE}/products/${productId}/history`);
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error("Erro ao buscar histórico:", errText);
-      alert("Erro ao buscar histórico de compras.");
-      return;
+    // Abrir / fechar formulário
+    function openProductForm() {
+      productFormContainer.classList.remove("hidden");
+    }
+    function closeProductForm() {
+      productFormContainer.classList.add("hidden");
     }
 
-    const history = await res.json();
-    const product = allProducts.find(p => p.id === productId);
-    historyProductName.textContent = product ? (product.description || "-") : "-";
+    btnOpenProductForm.addEventListener("click", openProductForm);
+    btnCloseProductForm.addEventListener("click", closeProductForm);
+    btnCancelProduct.addEventListener("click", closeProductForm);
 
-    historyTableBody.innerHTML = "";
+    // Status da API
+    async function checkApiStatus() {
+      try {
+        const res = await fetch(API_BASE + "/");
+        if (!res.ok) throw new Error("Status não OK");
+        await res.text();
+        apiStatusText.textContent = "Online";
+        cardApiStatus.textContent = "API em funcionamento";
+        cardApiStatus.classList.remove("text-slate-400");
+        cardApiStatus.classList.add("text-emerald-400");
+      } catch (err) {
+        apiStatusText.textContent = "Offline ou indisponível";
+        cardApiStatus.textContent = "Erro ao conectar na API";
+        cardApiStatus.classList.remove("text-emerald-400");
+        cardApiStatus.classList.add("text-rose-400");
+      }
+      cardApiUrl.textContent = API_BASE;
+      aboutApiUrl.textContent = API_BASE;
+    }
 
-    if (!Array.isArray(history) || history.length === 0) {
-      historyEmptyMessage.classList.remove("hidden");
-    } else {
-      historyEmptyMessage.classList.add("hidden");
+    // Produtos
+    async function loadProducts() {
+      try {
+        const res = await fetch(API_BASE + "/products");
+        const data = await res.json();
+        allProducts = Array.isArray(data) ? data : [];
+        renderProductsTable();
+        cardTotalProducts.textContent = allProducts.length.toString();
+        updateStockChart();
+      } catch (err) {
+        console.error("Erro ao carregar produtos:", err);
+      }
+    }
 
-      history.forEach((h) => {
-        const qtd = Number(h.quantity || 0);
-        const total = Number(h.totalPrice || 0);
-        const unit = Number(h.unitPrice || (qtd > 0 ? total / qtd : 0));
-        const dataStr = h.purchaseDate || h.date || "";
+    function renderProductsTable() {
+      const term = searchProductsInput.value.toLowerCase();
+      const filtered = allProducts.filter(p => {
+        const desc = (p.description || "").toLowerCase();
+        const unit = (p.unit || "").toLowerCase();
+        const loc = (p.location || "").toLowerCase();
+        return desc.includes(term) || unit.includes(term) || loc.includes(term);
+      });
 
+      productsTableBody.innerHTML = "";
+
+      if (filtered.length === 0) {
+        productsTableBody.innerHTML = `
+          <tr>
+            <td colspan="6" class="px-4 py-4 text-xs text-slate-500 text-center">
+              Nenhum produto encontrado.
+            </td>
+          </tr>
+        `;
+        productsCount.textContent = "0";
+        return;
+      }
+
+      filtered.forEach(p => {
         const tr = document.createElement("tr");
         tr.className = "hover:bg-slate-900/60";
+
+        const currentQty = Number(p.currentQuantity || 0);
+        const unitPrice = Number(p.unitPrice || 0);
+
         tr.innerHTML = `
-          <td class="px-3 py-2">${dataStr}</td>
-          <td class="px-3 py-2 text-right">${qtd.toFixed(2)}</td>
-          <td class="px-3 py-2 text-right">R$ ${total.toFixed(2)}</td>
-          <td class="px-3 py-2 text-right">R$ ${unit.toFixed(2)}</td>
+          <td class="px-4 py-3 text-sm">${p.description || "-"}</td>
+          <td class="px-4 py-3 text-sm">${p.unit || "-"}</td>
+          <td class="px-4 py-3 text-sm text-right">R$ ${unitPrice.toFixed(2)}</td>
+          <td class="px-4 py-3 text-sm text-right">${currentQty.toFixed(2)}</td>
+          <td class="px-4 py-3 text-xs text-slate-400">${p.location || "-"}</td>
+          <td class="px-4 py-3 text-right text-xs whitespace-nowrap">
+            <span class="cursor-pointer hover:underline text-amber-400 font-medium" data-action="purchase" data-id="${p.id}">
+              Registrar
+            </span>
+            <span class="text-slate-600 mx-1">•</span>
+            <span class="cursor-pointer hover:underline text-slate-200" data-action="edit" data-id="${p.id}">
+              Editar
+            </span>
+            <span class="text-slate-600 mx-1">•</span>
+            <span class="cursor-pointer hover:underline text-slate-400" data-action="history" data-id="${p.id}">
+              Histórico
+            </span>
+            <span class="text-slate-600 mx-1">•</span>
+            <span class="cursor-pointer hover:underline text-sky-400" data-action="report" data-id="${p.id}">
+              Relatórios
+            </span>
+          </td>
         `;
-        historyTableBody.appendChild(tr);
+
+        productsTableBody.appendChild(tr);
+      });
+
+      productsCount.textContent = filtered.length.toString();
+    }
+
+    searchProductsInput.addEventListener("input", () => {
+      renderProductsTable();
+    });
+
+    // Registrar compra
+    async function handlePurchase(productId) {
+      const quantityStr = prompt("Quantidade comprada (mesma unidade do produto):");
+      if (!quantityStr) return;
+      const quantity = Number(quantityStr.replace(",", "."));
+      if (isNaN(quantity) || quantity <= 0) {
+        alert("Quantidade inválida.");
+        return;
+      }
+
+      const totalStr = prompt("Valor total pago (R$):");
+      if (!totalStr) return;
+      const totalPrice = Number(totalStr.replace(",", "."));
+      if (isNaN(totalPrice) || totalPrice <= 0) {
+        alert("Valor inválido.");
+        return;
+      }
+
+      const dateStr = prompt("Data da compra (AAAA-MM-DD). Deixe em branco para usar a data de hoje:");
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, "0");
+      const dd = String(today.getDate()).padStart(2, "0");
+      const purchaseDate = dateStr && dateStr.trim() !== "" ? dateStr.trim() : `${yyyy}-${mm}-${dd}`;
+
+      try {
+        const res = await fetch(`${API_BASE}/products/${productId}/purchase`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ quantity, totalPrice, purchaseDate })
+        });
+
+        if (!res.ok) {
+          const errText = await res.text();
+          console.error("Erro ao registrar compra:", errText);
+          alert("Erro ao registrar compra. Veja o console para detalhes.");
+          return;
+        }
+
+        alert("Compra registrada com sucesso! Estoque atualizado.");
+        await loadProducts();
+      } catch (err) {
+        console.error("Erro na requisição de compra:", err);
+        alert("Erro de conexão ao registrar compra.");
+      }
+    }
+
+    // clique nos links de ação
+    productsTableBody.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-action]");
+      if (!btn) return;
+
+      const action = btn.getAttribute("data-action");
+      const id = btn.getAttribute("data-id");
+      if (!id) return;
+
+      if (action === "purchase") {
+        handlePurchase(id);
+      } else if (action === "edit") {
+        handleEditProduct(id);
+      } else if (action === "history") {
+        handleShowHistory(id);
+      } else if (action === "report") {
+        handleShowReport(id);
+      }
+    });
+
+    // Editar produto
+    async function handleEditProduct(productId) {
+      const product = allProducts.find(p => p.id === productId);
+      if (!product) {
+        alert("Produto não encontrado na lista carregada.");
+        return;
+      }
+
+      const novaDescricao = prompt(
+        "Nova descrição para o produto:",
+        product.description || ""
+      );
+
+      if (!novaDescricao || novaDescricao.trim() === "") {
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/products/${productId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ description: novaDescricao.trim() })
+        });
+
+        if (!res.ok) {
+          const errText = await res.text();
+          console.error("Erro ao editar produto:", errText);
+          alert("Erro ao editar produto. Veja o console para detalhes.");
+          return;
+        }
+
+        alert("Produto atualizado com sucesso!");
+        await loadProducts();
+      } catch (err) {
+        console.error("Erro na requisição de edição:", err);
+        alert("Erro de conexão ao editar produto.");
+      }
+    }
+
+    // Histórico em modal
+    async function handleShowHistory(productId) {
+      try {
+        const res = await fetch(`${API_BASE}/products/${productId}/history`);
+        if (!res.ok) {
+          const errText = await res.text();
+          console.error("Erro ao buscar histórico:", errText);
+          alert("Erro ao buscar histórico de compras.");
+          return;
+        }
+
+        const history = await res.json();
+        const product = allProducts.find(p => p.id === productId);
+        historyProductName.textContent = product ? (product.description || "-") : "-";
+
+        historyTableBody.innerHTML = "";
+
+        if (!Array.isArray(history) || history.length === 0) {
+          historyEmptyMessage.classList.remove("hidden");
+        } else {
+          historyEmptyMessage.classList.add("hidden");
+
+          history.forEach((h) => {
+            const qtd = Number(h.quantity || 0);
+            const total = Number(h.totalPrice || 0);
+            const unit = Number(h.unitPrice || (qtd > 0 ? total / qtd : 0));
+            const dataStr = h.purchaseDate || h.date || "";
+
+            const tr = document.createElement("tr");
+            tr.className = "hover:bg-slate-900/60";
+            tr.innerHTML = `
+              <td class="px-3 py-2">${dataStr}</td>
+              <td class="px-3 py-2 text-right">${qtd.toFixed(2)}</td>
+              <td class="px-3 py-2 text-right">R$ ${total.toFixed(2)}</td>
+              <td class="px-3 py-2 text-right">R$ ${unit.toFixed(2)}</td>
+            `;
+            historyTableBody.appendChild(tr);
+          });
+        }
+
+        historyModal.classList.remove("hidden");
+      } catch (err) {
+        console.error("Erro na requisição de histórico:", err);
+        alert("Erro de conexão ao buscar histórico.");
+      }
+    }
+
+    // ==============================
+    // 📊 RELATÓRIOS / BI DO PRODUTO
+    // ==============================
+    const reportModal = document.getElementById("report-modal");
+    const reportClose = document.getElementById("report-close");
+
+    const repProductName = document.getElementById("rep-product-name");
+    const repProductUnit = document.getElementById("rep-product-unit");
+
+    const repLastPrice = document.getElementById("rep-last-price");
+    const repLastDate = document.getElementById("rep-last-date");
+    const repPrevPrice = document.getElementById("rep-prev-price");
+    const repPrevDate = document.getElementById("rep-prev-date");
+    const repAvg4 = document.getElementById("rep-avg4");
+    const repTotalPurchases = document.getElementById("rep-total-purchases");
+    const repTrend = document.getElementById("rep-trend");
+    const repLastSupplier = document.getElementById("rep-last-supplier");
+    const repChartMeta = document.getElementById("rep-chart-meta");
+    const repHistoryBody = document.getElementById("rep-history-body");
+
+    let repPriceChart = null;
+
+    function formatCurrencyBI(value) {
+      if (value == null || isNaN(value)) return "–";
+      return value.toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+        minimumFractionDigits: 2
       });
     }
 
-    historyModal.classList.remove("hidden");
-  } catch (err) {
-    console.error("Erro na requisição de histórico:", err);
-    alert("Erro de conexão ao buscar histórico.");
-  }
-}
-
-// ==============================
-// 📊 RELATÓRIOS / BI DO PRODUTO
-// ==============================
-const reportModal = document.getElementById("report-modal");
-const reportClose = document.getElementById("report-close");
-
-const repProductName = document.getElementById("rep-product-name");
-const repProductUnit = document.getElementById("rep-product-unit");
-
-const repLastPrice = document.getElementById("rep-last-price");
-const repLastDate = document.getElementById("rep-last-date");
-const repPrevPrice = document.getElementById("rep-prev-price");
-const repPrevDate = document.getElementById("rep-prev-date");
-const repAvg4 = document.getElementById("rep-avg4");
-const repTotalPurchases = document.getElementById("rep-total-purchases");
-const repTrend = document.getElementById("rep-trend");
-const repLastSupplier = document.getElementById("rep-last-supplier");
-const repChartMeta = document.getElementById("rep-chart-meta");
-const repHistoryBody = document.getElementById("rep-history-body");
-
-let repPriceChart = null;
-
-function formatCurrencyBI(value) {
-  if (value == null || isNaN(value)) return "–";
-  return value.toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-    minimumFractionDigits: 2
-  });
-}
-
-function formatDateLabelBI(dateStr) {
-  if (!dateStr) return "-";
-  const d = new Date(dateStr);
-  if (isNaN(d)) return dateStr;
-  return d.toLocaleDateString("pt-BR");
-}
-
-function openReportModal() {
-  reportModal.classList.remove("hidden");
-}
-
-function closeReportModal() {
-  reportModal.classList.add("hidden");
-  if (repPriceChart) {
-    repPriceChart.destroy();
-    repPriceChart = null;
-  }
-}
-
-if (reportClose) {
-  reportClose.addEventListener("click", closeReportModal);
-}
-if (reportModal) {
-  reportModal.addEventListener("click", (e) => {
-    if (e.target === reportModal) {
-      closeReportModal();
-    }
-  });
-}
-
-async function handleShowReport(productId) {
-  const product = allProducts.find(p => p.id === productId);
-
-  repProductName.textContent = product ? (product.description || "-") : "-";
-  repProductUnit.textContent = product ? `(${product.unit || "-"})` : "";
-
-  repLastPrice.textContent = "Carregando...";
-  repPrevPrice.textContent = "Carregando...";
-  repAvg4.textContent = "Carregando...";
-  repTrend.textContent = "Carregando...";
-  repLastDate.textContent = "–";
-  repPrevDate.textContent = "–";
-  repLastSupplier.textContent = "Fornecedor: –";
-  repChartMeta.textContent = "";
-  repHistoryBody.innerHTML = `
-    <tr>
-      <td colspan="6" class="px-2 py-3 text-center text-slate-500">
-        Carregando histórico...
-      </td>
-    </tr>
-  `;
-
-  openReportModal();
-
-  try {
-    const res = await fetch(`${API_BASE}/products/${productId}/history`);
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error("Erro ao buscar histórico para BI:", errText);
-      repHistoryBody.innerHTML = `
-        <tr>
-          <td colspan="6" class="px-2 py-3 text-center text-rose-400">
-            Erro ao carregar histórico.
-          </td>
-        </tr>
-      `;
-      repLastPrice.textContent = "Erro";
-      repPrevPrice.textContent = "Erro";
-      repAvg4.textContent = "Erro";
-      repTrend.textContent = "Erro";
-      return;
+    function formatDateLabelBI(dateStr) {
+      if (!dateStr) return "-";
+      const d = new Date(dateStr);
+      if (isNaN(d)) return dateStr;
+      return d.toLocaleDateString("pt-BR");
     }
 
-    let history = await res.json();
+    function openReportModal() {
+      reportModal.classList.remove("hidden");
+    }
 
-    history = history
-      .filter(h => h.purchaseDate)
-      .map(h => ({
-        ...h,
-        _dateObj: new Date(h.purchaseDate)
-      }))
-      .filter(h => !isNaN(h._dateObj))
-      .sort((a, b) => a._dateObj - b._dateObj);
+    function closeReportModal() {
+      reportModal.classList.add("hidden");
+      if (repPriceChart) {
+        repPriceChart.destroy();
+        repPriceChart = null;
+      }
+    }
 
-    if (history.length === 0) {
-      repLastPrice.textContent = "–";
-      repPrevPrice.textContent = "–";
-      repAvg4.textContent = "–";
-      repTrend.textContent = "Sem compras";
+    if (reportClose) {
+      reportClose.addEventListener("click", closeReportModal);
+    }
+    if (reportModal) {
+      reportModal.addEventListener("click", (e) => {
+        if (e.target === reportModal) {
+          closeReportModal();
+        }
+      });
+    }
+
+    async function handleShowReport(productId) {
+      const product = allProducts.find(p => p.id === productId);
+
+      repProductName.textContent = product ? (product.description || "-") : "-";
+      repProductUnit.textContent = product ? \`(\${product.unit || "-"})\` : "";
+
+      repLastPrice.textContent = "Carregando...";
+      repPrevPrice.textContent = "Carregando...";
+      repAvg4.textContent = "Carregando...";
+      repTrend.textContent = "Carregando...";
       repLastDate.textContent = "–";
       repPrevDate.textContent = "–";
       repLastSupplier.textContent = "Fornecedor: –";
-      repChartMeta.textContent = "Sem dados";
-      repHistoryBody.innerHTML = `
+      repChartMeta.textContent = "";
+      repHistoryBody.innerHTML = \`
         <tr>
           <td colspan="6" class="px-2 py-3 text-center text-slate-500">
-            Nenhuma compra registrada para este produto.
+            Carregando histórico...
           </td>
         </tr>
-      `;
-      return;
+      \`;
+
+      openReportModal();
+
+      try {
+        const res = await fetch(\`\${API_BASE}/products/\${productId}/history\`);
+        if (!res.ok) {
+          const errText = await res.text();
+          console.error("Erro ao buscar histórico para BI:", errText);
+          repHistoryBody.innerHTML = \`
+            <tr>
+              <td colspan="6" class="px-2 py-3 text-center text-rose-400">
+                Erro ao carregar histórico.
+              </td>
+            </tr>
+          \`;
+          repLastPrice.textContent = "Erro";
+          repPrevPrice.textContent = "Erro";
+          repAvg4.textContent = "Erro";
+          repTrend.textContent = "Erro";
+          return;
+        }
+
+        let history = await res.json();
+
+        history = history
+          .filter(h => h.purchaseDate)
+          .map(h => ({
+            ...h,
+            _dateObj: new Date(h.purchaseDate)
+          }))
+          .filter(h => !isNaN(h._dateObj))
+          .sort((a, b) => a._dateObj - b._dateObj);
+
+        if (history.length === 0) {
+          repLastPrice.textContent = "–";
+          repPrevPrice.textContent = "–";
+          repAvg4.textContent = "–";
+          repTrend.textContent = "Sem compras";
+          repLastDate.textContent = "–";
+          repPrevDate.textContent = "–";
+          repLastSupplier.textContent = "Fornecedor: –";
+          repChartMeta.textContent = "Sem dados";
+          repHistoryBody.innerHTML = \`
+            <tr>
+              <td colspan="6" class="px-2 py-3 text-center text-slate-500">
+                Nenhuma compra registrada para este produto.
+              </td>
+            </tr>
+          \`;
+          return;
+        }
+
+        const last = history[history.length - 1];
+        const prev = history.length > 1 ? history[history.length - 2] : null;
+
+        const lastPrice = last.unitPrice || 0;
+        const prevPrice = prev ? (prev.unitPrice || 0) : null;
+
+        repLastPrice.textContent = formatCurrencyBI(lastPrice);
+        repLastDate.textContent = \`Última compra em \${formatDateLabelBI(last.purchaseDate)}\`;
+        repLastSupplier.textContent = "Fornecedor: " + (last.supplier || "não informado");
+
+        if (prevPrice != null) {
+          repPrevPrice.textContent = formatCurrencyBI(prevPrice);
+          repPrevDate.textContent = \`Anterior em \${formatDateLabelBI(prev.purchaseDate)}\`;
+        } else {
+          repPrevPrice.textContent = "–";
+          repPrevDate.textContent = "Não há compra anterior";
+        }
+
+        const last4 = history.slice(-4);
+        const avg4 =
+          last4.reduce((sum, h) => sum + (h.unitPrice || 0), 0) / last4.length;
+        repAvg4.textContent = formatCurrencyBI(avg4);
+        repTotalPurchases.textContent = \`\${history.length} compras registradas\`;
+
+        if (prevPrice != null && prevPrice !== 0) {
+          const diff = lastPrice - prevPrice;
+          const perc = (diff / prevPrice) * 100;
+          const arrow = diff > 0 ? "▲" : diff < 0 ? "▼" : "■";
+          const color =
+            diff > 0 ? "text-rose-400" : diff < 0 ? "text-emerald-400" : "text-slate-200";
+          repTrend.innerHTML = \`<span class="\${color}">\${arrow} \${formatCurrencyBI(diff)} (\${perc.toFixed(1)}%)</span>\`;
+        } else {
+          repTrend.textContent = "Sem comparação (primeira compra)";
+        }
+
+        repHistoryBody.innerHTML = "";
+        history
+          .slice()
+          .reverse()
+          .forEach(h => {
+            const tr = document.createElement("tr");
+            tr.className = "hover:bg-slate-900/60";
+            tr.innerHTML = \`
+              <td class="px-2 py-1">\${formatDateLabelBI(h.purchaseDate)}</td>
+              <td class="px-2 py-1 text-right">\${Number(h.quantity || 0).toLocaleString("pt-BR")}</td>
+              <td class="px-2 py-1 text-right">\${formatCurrencyBI(h.unitPrice || 0)}</td>
+              <td class="px-2 py-1 text-right">\${formatCurrencyBI(h.totalPrice || 0)}</td>
+              <td class="px-2 py-1 text-left">\${h.supplier || "-"}</td>
+              <td class="px-2 py-1 text-right">\${(h.stockAfter ?? "").toLocaleString("pt-BR")}</td>
+            \`;
+            repHistoryBody.appendChild(tr);
+          });
+
+        const labels = history.map(h => h._dateObj.toLocaleDateString("pt-BR"));
+        const prices = history.map(h => h.unitPrice || 0);
+
+        repChartMeta.textContent = \`\${history.length} pontos de preço\`;
+
+        const ctx = document.getElementById("rep-price-chart").getContext("2d");
+        if (repPriceChart) {
+          repPriceChart.destroy();
+        }
+        repPriceChart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels,
+            datasets: [
+              {
+                label: "Preço unitário (R$)",
+                data: prices,
+                borderWidth: 2,
+                tension: 0.25
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                ticks: {
+                  callback: (value) => formatCurrencyBI(value)
+                }
+              }
+            }
+          }
+        });
+      } catch (err) {
+        console.error("Erro ao carregar relatório de produto:", err);
+        repHistoryBody.innerHTML = \`
+          <tr>
+            <td colspan="6" class="px-2 py-3 text-center text-rose-400">
+              Erro ao carregar dados do relatório.
+            </td>
+          </tr>
+        \`;
+        repLastPrice.textContent = "Erro";
+        repPrevPrice.textContent = "Erro";
+        repAvg4.textContent = "Erro";
+        repTrend.textContent = "Erro";
+      }
     }
 
-    const last = history[history.length - 1];
-    const prev = history.length > 1 ? history[history.length - 2] : null;
-
-    const lastPrice = last.unitPrice || 0;
-    const prevPrice = prev ? (prev.unitPrice || 0) : null;
-
-    repLastPrice.textContent = formatCurrencyBI(lastPrice);
-    repLastDate.textContent = `Última compra em ${formatDateLabelBI(last.purchaseDate)}`;
-    repLastSupplier.textContent = "Fornecedor: " + (last.supplier || "não informado");
-
-    if (prevPrice != null) {
-      repPrevPrice.textContent = formatCurrencyBI(prevPrice);
-      repPrevDate.textContent = `Anterior em ${formatDateLabelBI(prev.purchaseDate)}`;
-    } else {
-      repPrevPrice.textContent = "–";
-      repPrevDate.textContent = "Não há compra anterior";
+    // Pedidos
+    async function loadOrders() {
+      const status = ordersStatusFilter.value;
+      try {
+        const res = await fetch(\`\${API_BASE}/orders?status=\${encodeURIComponent(status)}\`);
+        const data = await res.json();
+        const orders = Array.isArray(data) ? data : [];
+        renderOrdersTable(orders);
+        if (status === "pendente") {
+          cardPendingOrders.textContent = orders.length.toString();
+        }
+      } catch (err) {
+        console.error("Erro ao carregar pedidos:", err);
+      }
     }
 
-    const last4 = history.slice(-4);
-    const avg4 =
-      last4.reduce((sum, h) => sum + (h.unitPrice || 0), 0) / last4.length;
-    repAvg4.textContent = formatCurrencyBI(avg4);
-    repTotalPurchases.textContent = `${history.length} compras registradas`;
+    function renderOrdersTable(orders) {
+      ordersTableBody.innerHTML = "";
+      if (orders.length === 0) {
+        ordersTableBody.innerHTML = \`
+          <tr>
+            <td colspan="5" class="px-4 py-4 text-xs text-slate-500 text-center">
+              Nenhum pedido encontrado para este status.
+            </td>
+          </tr>
+        \`;
+        ordersCount.textContent = "0";
+        return;
+      }
 
-    if (prevPrice != null && prevPrice !== 0) {
-      const diff = lastPrice - prevPrice;
-      const perc = (diff / prevPrice) * 100;
-      const arrow = diff > 0 ? "▲" : diff < 0 ? "▼" : "■";
-      const color =
-        diff > 0 ? "text-rose-400" : diff < 0 ? "text-emerald-400" : "text-slate-200";
-      repTrend.innerHTML = `<span class="${color}">${arrow} ${formatCurrencyBI(diff)} (${perc.toFixed(1)}%)</span>`;
-    } else {
-      repTrend.textContent = "Sem comparação (primeira compra)";
-    }
-
-    repHistoryBody.innerHTML = "";
-    history
-      .slice()
-      .reverse()
-      .forEach(h => {
+      orders.forEach(o => {
         const tr = document.createElement("tr");
-        tr.className = "hover:bg-slate-900/60";
-        tr.innerHTML = `
-          <td class="px-2 py-1">${formatDateLabelBI(h.purchaseDate)}</td>
-          <td class="px-2 py-1 text-right">${Number(h.quantity || 0).toLocaleString("pt-BR")}</td>
-          <td class="px-2 py-1 text-right">${formatCurrencyBI(h.unitPrice || 0)}</td>
-          <td class="px-2 py-1 text-right">${formatCurrencyBI(h.totalPrice || 0)}</td>
-          <td class="px-2 py-1 text-left">${h.supplier || "-"}</td>
-          <td class="px-2 py-1 text-right">${(h.stockAfter ?? "").toLocaleString("pt-BR")}</td>
-        `;
-        repHistoryBody.appendChild(tr);
+        tr.className = "hover:bg-slate-900/60 text-xs";
+        const itemsText = Array.isArray(o.items)
+          ? o.items.map(i => \`\${i.qty}x \${i.name}\`).join(", ")
+          : "-";
+
+        tr.innerHTML = \`
+          <td class="px-4 py-2 align-top">
+            <div class="font-medium text-slate-100">\${o.tableNumber || "-"}</div>
+            <div class="text-[11px] text-slate-500">\${o.channel || "-"}</div>
+          </td>
+          <td class="px-4 py-2 align-top">\${o.customerName || "-"}</td>
+          <td class="px-4 py-2 align-top">\${itemsText}</td>
+          <td class="px-4 py-2 align-top">
+            <span class="px-2 py-1 rounded-full text-[10px] bg-slate-900 border border-slate-700 text-slate-200">
+              \${o.status}
+            </span>
+          </td>
+          <td class="px-4 py-2 align-top text-right">
+          </td>
+        \`;
+        ordersTableBody.appendChild(tr);
       });
 
-    const labels = history.map(h => h._dateObj.toLocaleDateString("pt-BR"));
-    const prices = history.map(h => h.unitPrice || 0);
-
-    repChartMeta.textContent = `${history.length} pontos de preço`;
-
-    const ctx = document.getElementById("rep-price-chart").getContext("2d");
-    if (repPriceChart) {
-      repPriceChart.destroy();
+      ordersCount.textContent = orders.length.toString();
     }
-    repPriceChart = new Chart(ctx, {
-      type: "line",
-      data: {
-        labels,
-        datasets: [
-          {
-            label: "Preço unitário (R$)",
-            data: prices,
-            borderWidth: 2,
-            tension: 0.25
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: {
-            ticks: {
-              callback: (value) => formatCurrencyBI(value)
+
+    ordersStatusFilter.addEventListener("change", () => {
+      loadOrders();
+    });
+
+    // Gráfico de estoque
+    function updateStockChart() {
+      const ctx = document.getElementById("stockChart");
+      if (!ctx) return;
+
+      const sorted = [...allProducts].sort(
+        (a, b) => Number(b.currentQuantity || 0) - Number(a.currentQuantity || 0)
+      );
+      const top = sorted.slice(0, 6);
+      const labels = top.map(p => p.description || "");
+      const values = top.map(p => Number(p.currentQuantity || 0));
+
+      if (stockChart) {
+        stockChart.destroy();
+      }
+
+      stockChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [{
+            label: "Quantidade atual",
+            data: values
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              labels: { color: "#e5e7eb", font: { size: 11 } }
+            }
+          },
+          scales: {
+            x: {
+              ticks: { color: "#9ca3af", font: { size: 10 } },
+              grid: { color: "rgba(55,65,81,0.4)" }
+            },
+            y: {
+              ticks: { color: "#9ca3af", font: { size: 10 } },
+              grid: { color: "rgba(55,65,81,0.4)" }
             }
           }
         }
+      });
+    }
+
+    // Formulário de novo produto
+    productForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const description = document.getElementById("pf-description").value.trim();
+      const unit = document.getElementById("pf-unit").value.trim();
+      const unitSize = document.getElementById("pf-unitSize").value.trim();
+      const unitPrice = Number(
+        document.getElementById("pf-unitPrice").value.replace(",", ".")
+      );
+      const yieldPercent = Number(
+        document.getElementById("pf-yieldPercent").value || 100
+      );
+      const notes = document.getElementById("pf-notes").value.trim();
+      const location = document.getElementById("pf-location").value.trim();
+      const currentQuantity = Number(
+        document
+          .getElementById("pf-currentQuantity")
+          .value.replace(",", ".") || 0
+      );
+
+      if (!description || !unit || isNaN(unitPrice)) {
+        alert("Preencha ao menos descrição, unidade e valor da unidade.");
+        return;
+      }
+
+      const body = {
+        description,
+        unit,
+        unitSize,
+        unitPrice,
+        yieldPercent,
+        notes,
+        location,
+        previousQuantity: 0,
+        purchaseQuantity: 0,
+        currentQuantity
+      };
+
+      try {
+        const res = await fetch(API_BASE + "/products", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        });
+
+        if (!res.ok) {
+          const errText = await res.text();
+          console.error("Erro ao criar produto:", errText);
+          alert("Erro ao criar produto. Veja o console para detalhes.");
+          return;
+        }
+
+        alert("Produto cadastrado com sucesso!");
+        productForm.reset();
+        document.getElementById("pf-yieldPercent").value = 100;
+        document.getElementById("pf-currentQuantity").value = 0;
+        closeProductForm();
+        await loadProducts();
+      } catch (err) {
+        console.error("Erro na requisição de produto:", err);
+        alert("Erro de conexão ao salvar produto.");
       }
     });
-  } catch (err) {
-    console.error("Erro ao carregar relatório de produto:", err);
-    repHistoryBody.innerHTML = `
-      <tr>
-        <td colspan="6" class="px-2 py-3 text-center text-rose-400">
-          Erro ao carregar dados do relatório.
-        </td>
-      </tr>
-    `;
-    repLastPrice.textContent = "Erro";
-    repPrevPrice.textContent = "Erro";
-    repAvg4.textContent = "Erro";
-    repTrend.textContent = "Erro";
-  }
-}
 
-// -----------------------------
-// Pedidos
-// -----------------------------
-async function loadOrders() {
-  const status = ordersStatusFilter.value;
-  try {
-    const res = await fetch(`${API_BASE}/orders?status=${encodeURIComponent(status)}`);
-    const data = await res.json();
-    const orders = Array.isArray(data) ? data : [];
-    renderOrdersTable(orders);
-    if (status === "pendente") {
-      cardPendingOrders.textContent = orders.length.toString();
-    }
-  } catch (err) {
-    console.error("Erro ao carregar pedidos:", err);
-  }
-}
-
-function renderOrdersTable(orders) {
-  ordersTableBody.innerHTML = "";
-  if (orders.length === 0) {
-    ordersTableBody.innerHTML = `
-      <tr>
-        <td colspan="5" class="px-4 py-4 text-xs text-slate-500 text-center">
-          Nenhum pedido encontrado para este status.
-        </td>
-      </tr>
-    `;
-    ordersCount.textContent = "0";
-    return;
-  }
-
-  orders.forEach(o => {
-    const tr = document.createElement("tr");
-    tr.className = "hover:bg-slate-900/60 text-xs";
-    const itemsText = Array.isArray(o.items)
-      ? o.items.map(i => `${i.qty}x ${i.name}`).join(", ")
-      : "-";
-
-    tr.innerHTML = `
-      <td class="px-4 py-2 align-top">
-        <div class="font-medium text-slate-100">${o.tableNumber || "-"}</div>
-        <div class="text-[11px] text-slate-500">${o.channel || "-"}</div>
-      </td>
-      <td class="px-4 py-2 align-top">${o.customerName || "-"}</td>
-      <td class="px-4 py-2 align-top">${itemsText}</td>
-      <td class="px-4 py-2 align-top">
-        <span class="px-2 py-1 rounded-full text-[10px] bg-slate-900 border border-slate-700 text-slate-200">
-          ${o.status}
-        </span>
-      </td>
-      <td class="px-4 py-2 align-top text-right">
-      </td>
-    `;
-    ordersTableBody.appendChild(tr);
-  });
-
-  ordersCount.textContent = orders.length.toString();
-}
-
-ordersStatusFilter.addEventListener("change", () => {
-  loadOrders();
-});
-
-// -----------------------------
-// Gráfico de estoque
-// -----------------------------
-function updateStockChart() {
-  const ctx = document.getElementById("stockChart");
-  if (!ctx) return;
-
-  const sorted = [...allProducts].sort(
-    (a, b) => Number(b.currentQuantity || 0) - Number(a.currentQuantity || 0)
-  );
-  const top = sorted.slice(0, 6);
-  const labels = top.map(p => p.description || "");
-  const values = top.map(p => Number(p.currentQuantity || 0));
-
-  if (stockChart) {
-    stockChart.destroy();
-  }
-
-  stockChart = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels,
-      datasets: [{
-        label: "Quantidade atual",
-        data: values
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: {
-          labels: { color: "#e5e7eb", font: { size: 11 } }
-        }
-      },
-      scales: {
-        x: {
-          ticks: { color: "#9ca3af", font: { size: 10 } },
-          grid: { color: "rgba(55,65,81,0.4)" }
-        },
-        y: {
-          ticks: { color: "#9ca3af", font: { size: 10 } },
-          grid: { color: "rgba(55,65,81,0.4)" }
-        }
-      }
-    }
-  });
-}
-
-// -----------------------------
-// Formulário de novo produto
-// -----------------------------
-productForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  const description = document.getElementById("pf-description").value.trim();
-  const unit = document.getElementById("pf-unit").value.trim();
-  const unitSize = document.getElementById("pf-unitSize").value.trim();
-  const unitPrice = Number(
-    document.getElementById("pf-unitPrice").value.replace(",", ".")
-  );
-  const yieldPercent = Number(
-    document.getElementById("pf-yieldPercent").value || 100
-  );
-  const notes = document.getElementById("pf-notes").value.trim();
-  const location = document.getElementById("pf-location").value.trim();
-  const currentQuantity = Number(
-    document
-      .getElementById("pf-currentQuantity")
-      .value.replace(",", ".") || 0
-  );
-
-  if (!description || !unit || isNaN(unitPrice)) {
-    alert("Preencha ao menos descrição, unidade e valor da unidade.");
-    return;
-  }
-
-  const body = {
-    description,
-    unit,
-    unitSize,
-    unitPrice,
-    yieldPercent,
-    notes,
-    location,
-    previousQuantity: 0,
-    purchaseQuantity: 0,
-    currentQuantity
-  };
-
-  try {
-    const res = await fetch(API_BASE + "/products", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body)
-    });
-
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error("Erro ao criar produto:", errText);
-      alert("Erro ao criar produto. Veja o console para detalhes.");
-      return;
+    // Inicialização
+    async function initDashboard() {
+      await checkApiStatus();
+      await loadProducts();
+      await loadOrders();
+      showTab("estoque");
     }
 
-    alert("Produto cadastrado com sucesso!");
-    productForm.reset();
-    document.getElementById("pf-yieldPercent").value = 100;
-    document.getElementById("pf-currentQuantity").value = 0;
-    closeProductForm();
-    await loadProducts();
-  } catch (err) {
-    console.error("Erro na requisição de produto:", err);
-    alert("Erro de conexão ao salvar produto.");
-  }
-});
-
-// -----------------------------
-// Inicialização
-// -----------------------------
-async function initDashboard() {
-  await checkApiStatus();
-  await loadProducts();
-  await loadOrders();
-  showTab("estoque");
-}
-
-document.addEventListener("DOMContentLoaded", initDashboard);
-</script>
-
-
-<!-- 📊 MODAL DE RELATÓRIOS / BI DO PRODUTO -->
-<div
-  id="report-modal"
-  class="hidden fixed inset-0 z-50 bg-black/70 flex items-center justify-center px-2 sm:px-4"
->
-  <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden shadow-2xl flex flex-col">
-    <!-- Cabeçalho -->
-    <div class="px-4 sm:px-6 py-3 border-b border-slate-700 flex items-center justify-between">
-      <div>
-        <h2 class="text-sm sm:text-base font-semibold text-slate-100">
-          Relatórios do produto
-          <span id="rep-product-name" class="text-amber-300"></span>
-          <span id="rep-product-unit" class="text-slate-400 text-xs"></span>
-        </h2>
-        <p class="text-[11px] text-slate-400">
-          Histórico de compras, variação de preços, média das últimas compras e série temporal.
-        </p>
-      </div>
-      <button
-        id="report-close"
-        class="w-7 h-7 flex items-center justify-center rounded-full hover:bg-slate-800 text-slate-300 text-sm"
-      >
-        ✕
-      </button>
-    </div>
-
-    <!-- Conteúdo -->
-    <div class="flex-1 overflow-auto p-4 sm:p-6 space-y-4">
-      <!-- Linha de cards-resumo -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        <div class="bg-slate-900/70 border border-slate-700 rounded-xl p-3">
-          <p class="text-[11px] text-slate-400">Último preço</p>
-          <p id="rep-last-price" class="text-sm font-semibold text-emerald-400 mt-1">
-            R$ 0,00
-          </p>
-          <p id="rep-last-date" class="text-[11px] text-slate-500 mt-1">
-            –
-          </p>
-          <p id="rep-last-supplier" class="text-[10px] text-slate-500 mt-1">
-            Fornecedor: –
-          </p>
-        </div>
-
-        <div class="bg-slate-900/70 border border-slate-700 rounded-xl p-3">
-          <p class="text-[11px] text-slate-400">Preço anterior</p>
-          <p id="rep-prev-price" class="text-sm font-semibold text-slate-100 mt-1">
-            –
-          </p>
-          <p id="rep-prev-date" class="text-[11px] text-slate-500 mt-1">
-            –
-          </p>
-        </div>
-
-        <div class="bg-slate-900/70 border border-slate-700 rounded-xl p-3">
-          <p class="text-[11px] text-slate-400">Média das últimas 4 compras</p>
-          <p id="rep-avg4" class="text-sm font-semibold text-sky-300 mt-1">
-            –
-          </p>
-          <p id="rep-total-purchases" class="text-[11px] text-slate-500 mt-1">
-            –
-          </p>
-        </div>
-
-        <div class="bg-slate-900/70 border border-slate-700 rounded-xl p-3">
-          <p class="text-[11px] text-slate-400">Tendência do preço</p>
-          <p id="rep-trend" class="text-sm font-semibold mt-1">
-            –
-          </p>
-          <p id="rep-chart-meta" class="text-[11px] text-slate-500 mt-1">
-            –
-          </p>
-        </div>
-      </div>
-
-      <!-- Gráfico -->
-      <div class="bg-slate-900/70 border border-slate-700 rounded-xl p-3 sm:p-4 h-64 sm:h-72 flex flex-col">
-        <div class="flex items-center justify-between mb-2">
-          <p class="text-[11px] text-slate-400">
-            Série temporal do preço unitário (todas as compras)
-          </p>
-        </div>
-        <div class="flex-1">
-          <canvas id="rep-price-chart"></canvas>
-        </div>
-      </div>
-
-      <!-- Tabela de histórico detalhado -->
-      <div class="bg-slate-900/70 border border-slate-700 rounded-xl overflow-hidden">
-        <div class="px-3 py-2 border-b border-slate-700 flex items-center justify-between">
-          <p class="text-[11px] text-slate-400">
-            Histórico de compras detalhado (da mais recente para a mais antiga)
-          </p>
-        </div>
-        <div class="max-h-64 overflow-auto">
-          <table class="min-w-full text-[11px]">
-            <thead class="bg-slate-950/60 text-slate-400">
-              <tr>
-                <th class="px-2 py-2 text-left font-medium">Data</th>
-                <th class="px-2 py-2 text-right font-medium">Quantidade</th>
-                <th class="px-2 py-2 text-right font-medium">Preço unitário</th>
-                <th class="px-2 py-2 text-right font-medium">Valor total</th>
-                <th class="px-2 py-2 text-left font-medium">Fornecedor</th>
-                <th class="px-2 py-2 text-right font-medium">Estoque após</th>
-              </tr>
-            </thead>
-            <tbody id="rep-history-body" class="divide-y divide-slate-800">
-              <!-- linhas preenchidas via JS -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- Rodapé -->
-    <div class="px-4 sm:px-6 py-2 border-t border-slate-800 text-[11px] text-slate-500 flex items-center justify-between">
-      <span>
-        Dica: use estes dados para ajustar o preço de venda de acordo com a tendência de custo.
-      </span>
-      <span class="hidden sm:inline">
-        Saleh Digital · BI de compras
-      </span>
-    </div>
-  </div>
-</div>
-
-
+    document.addEventListener("DOMContentLoaded", initDashboard);
+  </script>
 
 </body>
 </html>
