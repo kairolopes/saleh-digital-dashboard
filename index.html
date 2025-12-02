@@ -568,7 +568,7 @@
     </div>
   </div>
 
-  <!-- SCRIPT ÚNICO (DEPOIS DE TODOS OS MODAIS) -->
+  <!-- SCRIPT PRINCIPAL -->
   <script>
     // 🔗 URL da sua API no Render
     const API_BASE = "https://saleh-digital-api.onrender.com";
@@ -685,7 +685,9 @@
     btnMenuSobre.addEventListener("click", () => showTab("sobre"));
     btnMenuCrm.addEventListener("click", () => showTab("crm"));
 
+    // -----------------------------
     // Abrir / fechar formulário
+    // -----------------------------
     function openProductForm() {
       productFormContainer.classList.remove("hidden");
     }
@@ -697,7 +699,9 @@
     btnCloseProductForm.addEventListener("click", closeProductForm);
     btnCancelProduct.addEventListener("click", closeProductForm);
 
+    // -----------------------------
     // Status da API
+    // -----------------------------
     async function checkApiStatus() {
       try {
         const res = await fetch(API_BASE + "/");
@@ -717,7 +721,9 @@
       aboutApiUrl.textContent = API_BASE;
     }
 
+    // -----------------------------
     // Produtos
+    // -----------------------------
     async function loadProducts() {
       try {
         const res = await fetch(API_BASE + "/products");
@@ -1014,7 +1020,7 @@
       const product = allProducts.find(p => p.id === productId);
 
       repProductName.textContent = product ? (product.description || "-") : "-";
-      repProductUnit.textContent = product ? \`(\${product.unit || "-"})\` : "";
+      repProductUnit.textContent = product ? `(${product.unit || "-"})` : "";
 
       repLastPrice.textContent = "Carregando...";
       repPrevPrice.textContent = "Carregando...";
@@ -1024,28 +1030,28 @@
       repPrevDate.textContent = "–";
       repLastSupplier.textContent = "Fornecedor: –";
       repChartMeta.textContent = "";
-      repHistoryBody.innerHTML = \`
+      repHistoryBody.innerHTML = `
         <tr>
           <td colspan="6" class="px-2 py-3 text-center text-slate-500">
             Carregando histórico...
           </td>
         </tr>
-      \`;
+      `;
 
       openReportModal();
 
       try {
-        const res = await fetch(\`\${API_BASE}/products/\${productId}/history\`);
+        const res = await fetch(`${API_BASE}/products/${productId}/history`);
         if (!res.ok) {
           const errText = await res.text();
           console.error("Erro ao buscar histórico para BI:", errText);
-          repHistoryBody.innerHTML = \`
+          repHistoryBody.innerHTML = `
             <tr>
               <td colspan="6" class="px-2 py-3 text-center text-rose-400">
                 Erro ao carregar histórico.
               </td>
             </tr>
-          \`;
+          `;
           repLastPrice.textContent = "Erro";
           repPrevPrice.textContent = "Erro";
           repAvg4.textContent = "Erro";
@@ -1073,13 +1079,13 @@
           repPrevDate.textContent = "–";
           repLastSupplier.textContent = "Fornecedor: –";
           repChartMeta.textContent = "Sem dados";
-          repHistoryBody.innerHTML = \`
+          repHistoryBody.innerHTML = `
             <tr>
               <td colspan="6" class="px-2 py-3 text-center text-slate-500">
                 Nenhuma compra registrada para este produto.
               </td>
             </tr>
-          \`;
+          `;
           return;
         }
 
@@ -1090,12 +1096,12 @@
         const prevPrice = prev ? (prev.unitPrice || 0) : null;
 
         repLastPrice.textContent = formatCurrencyBI(lastPrice);
-        repLastDate.textContent = \`Última compra em \${formatDateLabelBI(last.purchaseDate)}\`;
+        repLastDate.textContent = `Última compra em ${formatDateLabelBI(last.purchaseDate)}`;
         repLastSupplier.textContent = "Fornecedor: " + (last.supplier || "não informado");
 
         if (prevPrice != null) {
           repPrevPrice.textContent = formatCurrencyBI(prevPrice);
-          repPrevDate.textContent = \`Anterior em \${formatDateLabelBI(prev.purchaseDate)}\`;
+          repPrevDate.textContent = `Anterior em ${formatDateLabelBI(prev.purchaseDate)}`;
         } else {
           repPrevPrice.textContent = "–";
           repPrevDate.textContent = "Não há compra anterior";
@@ -1105,7 +1111,7 @@
         const avg4 =
           last4.reduce((sum, h) => sum + (h.unitPrice || 0), 0) / last4.length;
         repAvg4.textContent = formatCurrencyBI(avg4);
-        repTotalPurchases.textContent = \`\${history.length} compras registradas\`;
+        repTotalPurchases.textContent = `${history.length} compras registradas`;
 
         if (prevPrice != null && prevPrice !== 0) {
           const diff = lastPrice - prevPrice;
@@ -1113,7 +1119,7 @@
           const arrow = diff > 0 ? "▲" : diff < 0 ? "▼" : "■";
           const color =
             diff > 0 ? "text-rose-400" : diff < 0 ? "text-emerald-400" : "text-slate-200";
-          repTrend.innerHTML = \`<span class="\${color}">\${arrow} \${formatCurrencyBI(diff)} (\${perc.toFixed(1)}%)</span>\`;
+          repTrend.innerHTML = `<span class="${color}">${arrow} ${formatCurrencyBI(diff)} (${perc.toFixed(1)}%)</span>`;
         } else {
           repTrend.textContent = "Sem comparação (primeira compra)";
         }
@@ -1125,21 +1131,21 @@
           .forEach(h => {
             const tr = document.createElement("tr");
             tr.className = "hover:bg-slate-900/60";
-            tr.innerHTML = \`
-              <td class="px-2 py-1">\${formatDateLabelBI(h.purchaseDate)}</td>
-              <td class="px-2 py-1 text-right">\${Number(h.quantity || 0).toLocaleString("pt-BR")}</td>
-              <td class="px-2 py-1 text-right">\${formatCurrencyBI(h.unitPrice || 0)}</td>
-              <td class="px-2 py-1 text-right">\${formatCurrencyBI(h.totalPrice || 0)}</td>
-              <td class="px-2 py-1 text-left">\${h.supplier || "-"}</td>
-              <td class="px-2 py-1 text-right">\${(h.stockAfter ?? "").toLocaleString("pt-BR")}</td>
-            \`;
+            tr.innerHTML = `
+              <td class="px-2 py-1">${formatDateLabelBI(h.purchaseDate)}</td>
+              <td class="px-2 py-1 text-right">${Number(h.quantity || 0).toLocaleString("pt-BR")}</td>
+              <td class="px-2 py-1 text-right">${formatCurrencyBI(h.unitPrice || 0)}</td>
+              <td class="px-2 py-1 text-right">${formatCurrencyBI(h.totalPrice || 0)}</td>
+              <td class="px-2 py-1 text-left">${h.supplier || "-"}</td>
+              <td class="px-2 py-1 text-right">${(h.stockAfter ?? "").toLocaleString("pt-BR")}</td>
+            `;
             repHistoryBody.appendChild(tr);
           });
 
         const labels = history.map(h => h._dateObj.toLocaleDateString("pt-BR"));
         const prices = history.map(h => h.unitPrice || 0);
 
-        repChartMeta.textContent = \`\${history.length} pontos de preço\`;
+        repChartMeta.textContent = `${history.length} pontos de preço`;
 
         const ctx = document.getElementById("rep-price-chart").getContext("2d");
         if (repPriceChart) {
@@ -1172,13 +1178,13 @@
         });
       } catch (err) {
         console.error("Erro ao carregar relatório de produto:", err);
-        repHistoryBody.innerHTML = \`
+        repHistoryBody.innerHTML = `
           <tr>
             <td colspan="6" class="px-2 py-3 text-center text-rose-400">
               Erro ao carregar dados do relatório.
             </td>
           </tr>
-        \`;
+        `;
         repLastPrice.textContent = "Erro";
         repPrevPrice.textContent = "Erro";
         repAvg4.textContent = "Erro";
@@ -1186,11 +1192,13 @@
       }
     }
 
+    // -----------------------------
     // Pedidos
+    // -----------------------------
     async function loadOrders() {
       const status = ordersStatusFilter.value;
       try {
-        const res = await fetch(\`\${API_BASE}/orders?status=\${encodeURIComponent(status)}\`);
+        const res = await fetch(`${API_BASE}/orders?status=${encodeURIComponent(status)}`);
         const data = await res.json();
         const orders = Array.isArray(data) ? data : [];
         renderOrdersTable(orders);
@@ -1205,13 +1213,13 @@
     function renderOrdersTable(orders) {
       ordersTableBody.innerHTML = "";
       if (orders.length === 0) {
-        ordersTableBody.innerHTML = \`
+        ordersTableBody.innerHTML = `
           <tr>
             <td colspan="5" class="px-4 py-4 text-xs text-slate-500 text-center">
               Nenhum pedido encontrado para este status.
             </td>
           </tr>
-        \`;
+        `;
         ordersCount.textContent = "0";
         return;
       }
@@ -1223,21 +1231,20 @@
           ? o.items.map(i => \`\${i.qty}x \${i.name}\`).join(", ")
           : "-";
 
-        tr.innerHTML = \`
+        tr.innerHTML = `
           <td class="px-4 py-2 align-top">
-            <div class="font-medium text-slate-100">\${o.tableNumber || "-"}</div>
-            <div class="text-[11px] text-slate-500">\${o.channel || "-"}</div>
+            <div class="font-medium text-slate-100">${o.tableNumber || "-"}</div>
+            <div class="text-[11px] text-slate-500">${o.channel || "-"}</div>
           </td>
-          <td class="px-4 py-2 align-top">\${o.customerName || "-"}</td>
-          <td class="px-4 py-2 align-top">\${itemsText}</td>
+          <td class="px-4 py-2 align-top">${o.customerName || "-"}</td>
+          <td class="px-4 py-2 align-top">${itemsText}</td>
           <td class="px-4 py-2 align-top">
             <span class="px-2 py-1 rounded-full text-[10px] bg-slate-900 border border-slate-700 text-slate-200">
-              \${o.status}
+              ${o.status}
             </span>
           </td>
-          <td class="px-4 py-2 align-top text-right">
-          </td>
-        \`;
+          <td class="px-4 py-2 align-top text-right"></td>
+        `;
         ordersTableBody.appendChild(tr);
       });
 
@@ -1248,7 +1255,9 @@
       loadOrders();
     });
 
+    // -----------------------------
     // Gráfico de estoque
+    // -----------------------------
     function updateStockChart() {
       const ctx = document.getElementById("stockChart");
       if (!ctx) return;
@@ -1294,7 +1303,9 @@
       });
     }
 
+    // -----------------------------
     // Formulário de novo produto
+    // -----------------------------
     productForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
@@ -1359,16 +1370,106 @@
       }
     });
 
+    // -----------------------------
+    // CRM: salvar cliente
+    // -----------------------------
+    crmForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = crmName.value.trim();
+      const phone = crmPhone.value.trim();
+      const channel = crmChannel.value;
+      const notes = crmNotes.value.trim();
+
+      if (!phone) {
+        alert("Informe o telefone do cliente.");
+        return;
+      }
+
+      try {
+        const res = await fetch(API_BASE + "/customers", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, phone, channel, notes })
+        });
+
+        if (!res.ok) {
+          const errText = await res.text();
+          console.error("Erro ao salvar cliente:", errText);
+          alert("Erro ao salvar cliente. Veja o console para detalhes.");
+          return;
+        }
+
+        await loadCustomers();
+        crmForm.reset();
+        alert("Cliente salvo com sucesso!");
+      } catch (err) {
+        console.error("Erro na requisição de cliente:", err);
+        alert("Erro de conexão ao salvar cliente.");
+      }
+    });
+
+    async function loadCustomers() {
+      try {
+        const res = await fetch(API_BASE + "/customers");
+        const data = await res.json();
+        allCustomers = Array.isArray(data) ? data : [];
+        renderCustomersTable();
+      } catch (err) {
+        console.error("Erro ao carregar clientes:", err);
+      }
+    }
+
+    function renderCustomersTable() {
+      const term = (searchCustomersInput.value || "").toLowerCase();
+      const filtered = allCustomers.filter(c => {
+        const n = (c.name || "").toLowerCase();
+        const p = (c.phone || "").toLowerCase();
+        const ch = (c.channel || "").toLowerCase();
+        return n.includes(term) || p.includes(term) || ch.includes(term);
+      });
+
+      customersTableBody.innerHTML = "";
+      if (filtered.length === 0) {
+        customersTableBody.innerHTML = `
+          <tr>
+            <td colspan="4" class="px-4 py-4 text-xs text-slate-500 text-center">
+              Nenhum cliente encontrado.
+            </td>
+          </tr>
+        `;
+        customersCount.textContent = "0";
+        return;
+      }
+
+      filtered.forEach(c => {
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-900/60 text-xs";
+        tr.innerHTML = `
+          <td class="px-4 py-2">${c.name || "-"}</td>
+          <td class="px-4 py-2">${c.phone || "-"}</td>
+          <td class="px-4 py-2">${c.channel || "-"}</td>
+          <td class="px-4 py-2">${c.notes || "-"}</td>
+        `;
+        customersTableBody.appendChild(tr);
+      });
+
+      customersCount.textContent = filtered.length.toString();
+    }
+
+    searchCustomersInput.addEventListener("input", renderCustomersTable);
+
+    // -----------------------------
     // Inicialização
+    // -----------------------------
     async function initDashboard() {
       await checkApiStatus();
       await loadProducts();
       await loadOrders();
+      await loadCustomers();
       showTab("estoque");
     }
 
     document.addEventListener("DOMContentLoaded", initDashboard);
   </script>
-
 </body>
 </html>
