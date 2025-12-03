@@ -1999,6 +1999,66 @@ function renderOrdersTable(orders) {
     }
 
     document.addEventListener("DOMContentLoaded", initDashboard);
+
+
+    // ===============================
+// 📌 CÁLCULO DE CMV DA FICHA TÉCNICA
+// ===============================
+function arred2(valor) {
+  const n = Number(valor || 0);
+  return Number(n.toFixed(2));
+}
+
+/**
+ * ingredientes: array de objetos no formato:
+ *   { nome: "Arroz", custo: 0.55 }
+ *   - O campo "custo" é o custo daquele ingrediente NA RECEITA (não no kg inteiro).
+ *
+ * rendimento: número de porções da receita (ex.: 1, 4, 10...)
+ * precoVenda: preço de venda de UMA porção (ex.: 10.50)
+ */
+function calcularIndicadoresFicha(ingredientes, rendimento, precoVenda) {
+  const rend = Number(rendimento || 1);
+  const pv = Number(precoVenda || 0);
+
+  // 1) Soma dos custos dos insumos
+  const custoTotalReceita = ingredientes.reduce((soma, ing) => {
+    const c = Number(ing.custo || 0);
+    return soma + c;
+  }, 0);
+
+  // 2) Custo por porção
+  const custoPorPorcao = rend > 0 ? custoTotalReceita / rend : 0;
+
+  // 3) Lucro unitário (sem considerar outras despesas fixas)
+  const lucroUnitario = pv - custoPorPorcao;
+
+  // 4) % de CMV sobre o preço de venda
+  const cmvPercent = pv > 0 ? (custoPorPorcao / pv) * 100 : 0;
+
+  // 5) Markup real aplicado
+  const markupReal = custoPorPorcao > 0 ? pv / custoPorPorcao : 0;
+
+  // 6) Preços sugeridos para margens alvo (30%, 40%, 50%)
+  const precoSug30 = custoPorPorcao / (1 - 0.30); // 30% CMV
+  const precoSug40 = custoPorPorcao / (1 - 0.40); // 40% CMV
+  const precoSug50 = custoPorPorcao / (1 - 0.50); // 50% CMV
+
+  return {
+    custoTotalReceita: arred2(custoTotalReceita),
+    custoPorPorcao: arred2(custoPorPorcao),
+    precoVenda: arred2(pv),
+    lucroUnitario: arred2(lucroUnitario),
+    cmvPercent: arred2(cmvPercent),
+    markupReal: arred2(markupReal),
+
+    precoSugerido30: arred2(precoSug30),
+    precoSugerido40: arred2(precoSug40),
+    precoSugerido50: arred2(precoSug50)
+  };
+}
+
+    
   </script>
 </body>
 </html>
