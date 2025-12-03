@@ -1611,115 +1611,163 @@
     }
 
     function renderDishCards() {
-      dishCardsContainer.innerHTML = "";
+  dishCardsContainer.innerHTML = "";
 
-      if (!dishList.length) {
-        dishCardsContainer.innerHTML = `
-          <div
-            class="col-span-1 md:col-span-2 xl:col-span-3 text-xs text-slate-500 border border-dashed border-slate-800 rounded-2xl px-4 py-6 text-center"
-          >
-            Nenhuma ficha cadastrada ainda.
-            Clique em <span class="font-semibold text-amber-400">“Nova ficha técnica”</span> para criar a primeira.
-          </div>
-        `;
-        return;
-      }
+  if (!dishList.length) {
+    dishCardsContainer.innerHTML = `
+      <div
+        class="col-span-1 md:col-span-2 xl:col-span-3 text-xs text-slate-500 border border-dashed border-slate-800 rounded-2xl px-4 py-6 text-center"
+      >
+        Nenhuma ficha cadastrada ainda.
+        Clique em <span class="font-semibold text-amber-400">“Nova ficha técnica”</span> para criar a primeira.
+      </div>
+    `;
+    return;
+  }
 
-      dishList.forEach((dish) => {
-        const card = document.createElement("div");
-        card.className =
-          "rounded-2xl bg-slate-950 border border-slate-800 p-4 flex flex-col gap-3 text-xs";
+  dishList.forEach((dish) => {
+    // 👉 aqui usamos a função de indicadores
+    const indicadores = calcularIndicadoresFicha(
+      dish.ingredients.map((ing) => ({ custo: ing.cost })), // custo de cada ingrediente na receita
+      dish.yieldQty,
+      dish.salePrice
+    );
 
-        const custoTotal = dish.costTotal.toLocaleString("pt-BR", {
-          style: "currency",
-          currency: "BRL",
-        });
-        const custoPorPorcao = dish.costPerPortion.toLocaleString("pt-BR", {
-          style: "currency",
-          currency: "BRL",
-        });
-        const venda =
-          dish.salePrice > 0
-            ? dish.salePrice.toLocaleString("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              })
-            : "–";
-        const margemValor = dish.marginValue.toLocaleString("pt-BR", {
-          style: "currency",
-          currency: "BRL",
-        });
-        const margemPercentStr = `${dish.marginPercent.toFixed(1)}%`;
+    const custoTotal = indicadores.custoTotalReceita.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    });
+    const custoPorPorcao = indicadores.custoPorPorcao.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    });
+    const venda =
+      indicadores.precoVenda > 0
+        ? indicadores.precoVenda.toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+          })
+        : "–";
 
-        card.innerHTML = `
-          <div class="flex items-start justify-between gap-2">
-            <div>
-              <h3 class="text-sm font-semibold text-slate-50">
-                ${dish.name}
-              </h3>
-              <p class="text-[11px] text-slate-400">
-                Rendimento: <span class="font-medium">${dish.yieldQty} porções</span>
-              </p>
-            </div>
-          </div>
+    const lucroUnitario = indicadores.lucroUnitario.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    });
+    const cmvStr = `${indicadores.cmvPercent.toFixed(1)}%`;
+    const markupStr =
+      indicadores.markupReal > 0
+        ? `${indicadores.markupReal.toFixed(2)}x`
+        : "–";
 
-          <div class="grid grid-cols-2 gap-2">
-            <div class="bg-slate-900/60 rounded-xl p-2">
-              <p class="text-[10px] text-slate-400">Custo total da receita</p>
-              <p class="text-sm font-semibold text-amber-300">${custoTotal}</p>
-              <p class="text-[10px] text-slate-500">
-                Custo por porção: <span class="font-medium">${custoPorPorcao}</span>
-              </p>
-            </div>
-            <div class="bg-slate-900/60 rounded-xl p-2">
-              <p class="text-[10px] text-slate-400">Preço de venda</p>
-              <p class="text-sm font-semibold text-emerald-300">${venda}</p>
-              <p class="text-[10px] text-slate-500">
-                Margem bruta: <span class="font-medium">${margemValor} (${margemPercentStr})</span>
-              </p>
-            </div>
-          </div>
+    const precoS30 = indicadores.precoSugerido30.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    });
+    const precoS40 = indicadores.precoSugerido40.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    });
+    const precoS50 = indicadores.precoSugerido50.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    });
 
-          <div class="bg-slate-900/60 rounded-xl p-2">
+    const card = document.createElement("div");
+    card.className =
+      "rounded-2xl bg-slate-950 border border-slate-800 p-4 flex flex-col gap-3 text-xs";
+
+    card.innerHTML = `
+      <div class="flex items-start justify-between gap-2">
+        <div>
+          <h3 class="text-sm font-semibold text-slate-50">
+            ${dish.name}
+          </h3>
+          <p class="text-[11px] text-slate-400">
+            Rendimento: <span class="font-medium">${dish.yieldQty} porções</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <!-- BLOCO 1: Custo -->
+        <div class="bg-slate-900/60 rounded-xl p-2">
+          <p class="text-[10px] text-slate-400">Custo total da receita</p>
+          <p class="text-sm font-semibold text-amber-300">${custoTotal}</p>
+          <p class="text-[10px] text-slate-500">
+            Custo por porção: <span class="font-medium">${custoPorPorcao}</span>
+          </p>
+          <p class="text-[10px] text-slate-500 mt-1">
+            CMV sobre venda: <span class="font-medium">${cmvStr}</span>
+          </p>
+          <p class="text-[10px] text-slate-500">
+            Markup real: <span class="font-medium">${markupStr}</span>
+          </p>
+        </div>
+
+        <!-- BLOCO 2: Venda / lucro / preços sugeridos -->
+        <div class="bg-slate-900/60 rounded-xl p-2">
+          <p class="text-[10px] text-slate-400">Preço de venda</p>
+          <p class="text-sm font-semibold text-emerald-300">${venda}</p>
+          <p class="text-[10px] text-slate-500">
+            Lucro unitário: <span class="font-medium">${lucroUnitario}</span>
+          </p>
+          <div class="mt-2 border-t border-slate-700 pt-1">
             <p class="text-[10px] text-slate-400 mb-1">
-              Ingredientes da ficha
+              Sugestão de preço por CMV:
             </p>
-            <div class="max-h-32 overflow-auto">
-              <table class="w-full text-[10px]">
-                <thead class="text-slate-400">
-                  <tr>
-                    <th class="text-left px-1 py-1">Insumo</th>
-                    <th class="text-right px-1 py-1">Qtd.</th>
-                    <th class="text-right px-1 py-1">Unid.</th>
-                    <th class="text-right px-1 py-1">Custo</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-800">
-                  ${dish.ingredients
-                    .map((ing) => {
-                      const c = ing.cost.toLocaleString("pt-BR", {
-                        style: "currency",
-                        currency: "BRL",
-                      });
-                      return `
-                        <tr>
-                          <td class="px-1 py-1">${ing.productName}</td>
-                          <td class="px-1 py-1 text-right">${ing.qty.toFixed(2)}</td>
-                          <td class="px-1 py-1 text-right">${ing.unit}</td>
-                          <td class="px-1 py-1 text-right">${c}</td>
-                        </tr>
-                      `;
-                    })
-                    .join("")}
-                </tbody>
-              </table>
-            </div>
+            <p class="text-[10px] text-slate-500">
+              30% CMV: <span class="font-medium">${precoS30}</span>
+            </p>
+            <p class="text-[10px] text-slate-500">
+              40% CMV: <span class="font-medium">${precoS40}</span>
+            </p>
+            <p class="text-[10px] text-slate-500">
+              50% CMV: <span class="font-medium">${precoS50}</span>
+            </p>
           </div>
-        `;
+        </div>
+      </div>
 
-        dishCardsContainer.appendChild(card);
-      });
-    }
+      <div class="bg-slate-900/60 rounded-xl p-2">
+        <p class="text-[10px] text-slate-400 mb-1">
+          Ingredientes da ficha
+        </p>
+        <div class="max-h-32 overflow-auto">
+          <table class="w-full text-[10px]">
+            <thead class="text-slate-400">
+              <tr>
+                <th class="text-left px-1 py-1">Insumo</th>
+                <th class="text-right px-1 py-1">Qtd.</th>
+                <th class="text-right px-1 py-1">Unid.</th>
+                <th class="text-right px-1 py-1">Custo</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800">
+              ${dish.ingredients
+                .map((ing) => {
+                  const c = ing.cost.toLocaleString("pt-BR", {
+                    style: "currency",
+                    currency: "BRL",
+                  });
+                  return `
+                    <tr>
+                      <td class="px-1 py-1">${ing.productName}</td>
+                      <td class="px-1 py-1 text-right">${ing.qty.toFixed(2)}</td>
+                      <td class="px-1 py-1 text-right">${ing.unit}</td>
+                      <td class="px-1 py-1 text-right">${c}</td>
+                    </tr>
+                  `;
+                })
+                .join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+
+    dishCardsContainer.appendChild(card);
+  });
+}
 
 
 
