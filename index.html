@@ -1421,22 +1421,37 @@
     }
 
 
-        // ==============================
-    // 🧾 FICHAS TÉCNICAS DE PRATOS
-    // ==============================
+   // ==============================
+// 🧾 FICHAS TÉCNICAS DE PRATOS
+// ==============================
 
-    function openDishModal() {
-      // limpa formulário
-      dishForm.reset();
-      dishYieldInput.value = 1;
-      dishSalePriceInput.value = 0;
-      ingredientsBody.innerHTML = "";
-
-      // garante pelo menos 1 linha
-      addIngredientRow();
-
-      dishModal.classList.remove("hidden");
+async function openDishModal() {
+  // 1) Garante que os produtos do estoque foram carregados
+  if (!allProducts || allProducts.length === 0) {
+    try {
+      await loadProducts(); // chama /products de novo se estiver vazio
+    } catch (err) {
+      console.error("Erro ao carregar produtos para a ficha:", err);
+      alert("Não consegui carregar os insumos. Verifique se a API /products está ok.");
+      return;
     }
+  }
+
+  console.log("Qtd de produtos carregados para a ficha:", allProducts.length);
+
+  // 2) Limpa o formulário da ficha
+  dishForm.reset();
+  dishYieldInput.value = 1;
+  dishSalePriceInput.value = 0;
+  ingredientsBody.innerHTML = "";
+
+  // 3) Cria pelo menos 1 linha de ingrediente
+  addIngredientRow();
+
+  // 4) Abre o modal
+  dishModal.classList.remove("hidden");
+}
+
 
     function closeDishModal() {
       dishModal.classList.add("hidden");
@@ -1452,95 +1467,99 @@
       btnCancelDish.addEventListener("click", closeDishModal);
     }
 
-    if (dishModal) {
-      dishModal.addEventListener("click", (e) => {
-        if (e.target === dishModal) {
-          closeDishModal();
-        }
-      });
+    if (btnOpenDishModal) {
+      btnOpenDishModal.addEventListener("click", openDishModal);
     }
 
-    // cria uma linha de ingrediente
-    function addIngredientRow() {
-      const tr = document.createElement("tr");
-      tr.className = "hover:bg-slate-900/60";
 
-      tr.innerHTML = `
-        <td class="px-2 py-2">
-          <select
-            class="ingredient-product w-full rounded-lg bg-slate-900 border border-slate-700 px-2 py-1"
-          >
-            <option value="">Selecione o insumo</option>
-          </select>
-        </td>
-        <td class="px-2 py-2 text-right">
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            class="ingredient-qty w-20 text-right rounded-lg bg-slate-900 border border-slate-700 px-2 py-1"
-          />
-        </td>
-        <td class="px-2 py-2 text-right">
-          <span class="ingredient-unit text-slate-300">-</span>
-        </td>
-        <td class="px-2 py-2 text-right">
-          <span class="ingredient-cost text-slate-300">R$ 0,00</span>
-        </td>
-        <td class="px-2 py-2 text-center">
-          <button
-            type="button"
-            class="btn-remove-ingredient text-[11px] text-rose-400 hover:underline"
-          >
-            Remover
-          </button>
-        </td>
-      `;
+   function addIngredientRow() {
+  const tr = document.createElement("tr");
+  tr.className = "hover:bg-slate-900/60";
 
-      const select = tr.querySelector(".ingredient-product");
-      const qtyInput = tr.querySelector(".ingredient-qty");
-      const unitSpan = tr.querySelector(".ingredient-unit");
-      const costSpan = tr.querySelector(".ingredient-cost");
-      const btnRemove = tr.querySelector(".btn-remove-ingredient");
+  tr.innerHTML = `
+    <td class="px-2 py-2">
+      <select
+        class="ingredient-product w-full rounded-lg bg-slate-900 border border-slate-700 px-2 py-1"
+      >
+        <option value="">Selecione o insumo</option>
+      </select>
+    </td>
+    <td class="px-2 py-2 text-right">
+      <input
+        type="number"
+        min="0"
+        step="0.01"
+        class="ingredient-qty w-20 text-right rounded-lg bg-slate-900 border border-slate-700 px-2 py-1"
+      />
+    </td>
+    <td class="px-2 py-2 text-right">
+      <span class="ingredient-unit text-slate-300">-</span>
+    </td>
+    <td class="px-2 py-2 text-right">
+      <span class="ingredient-cost text-slate-300">R$ 0,00</span>
+    </td>
+    <td class="px-2 py-2 text-center">
+      <button
+        type="button"
+        class="btn-remove-ingredient text-[11px] text-rose-400 hover:underline"
+      >
+        Remover
+      </button>
+    </td>
+  `;
 
-      // preenche o select com produtos do estoque
-      allProducts.forEach((p) => {
-        const opt = document.createElement("option");
-        opt.value = p.id;
-        opt.textContent = `${p.description || ""} (${p.unit || "-"})`;
-        select.appendChild(opt);
-      });
+  const select = tr.querySelector(".ingredient-product");
+  const qtyInput = tr.querySelector(".ingredient-qty");
+  const unitSpan = tr.querySelector(".ingredient-unit");
+  const costSpan = tr.querySelector(".ingredient-cost");
+  const btnRemove = tr.querySelector(".btn-remove-ingredient");
 
-      function recalcRow() {
-        const id = select.value;
-        const qty = Number(qtyInput.value || 0);
-        const product = allProducts.find((p) => p.id === id);
+  // 🛟 Segurança: se não tiver insumos, mostra uma mensagem
+  if (!allProducts || allProducts.length === 0) {
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = "Nenhum insumo cadastrado";
+    select.appendChild(opt);
+  } else {
+    // Preenche o select com os produtos do estoque
+    allProducts.forEach((p) => {
+      const opt = document.createElement("option");
+      opt.value = p.id;
+      opt.textContent = `${p.description || ""} (${p.unit || "-"})`;
+      select.appendChild(opt);
+    });
+  }
 
-        if (!product || !qty || isNaN(qty)) {
-          unitSpan.textContent = product && product.unit ? product.unit : "-";
-          costSpan.textContent = "R$ 0,00";
-          return;
-        }
+  function recalcRow() {
+    const id = select.value;
+    const qty = Number(qtyInput.value || 0);
+    const product = allProducts.find((p) => p.id === id);
 
-        const unitPrice = Number(product.unitPrice || 0);
-        const cost = unitPrice * qty;
-
-        unitSpan.textContent = product.unit || "-";
-        costSpan.textContent = cost.toLocaleString("pt-BR", {
-          style: "currency",
-          currency: "BRL",
-        });
-      }
-
-      select.addEventListener("change", recalcRow);
-      qtyInput.addEventListener("input", recalcRow);
-
-      btnRemove.addEventListener("click", () => {
-        tr.remove();
-      });
-
-      ingredientsBody.appendChild(tr);
+    if (!product || !qty || isNaN(qty)) {
+      unitSpan.textContent = product && product.unit ? product.unit : "-";
+      costSpan.textContent = "R$ 0,00";
+      return;
     }
+
+    const unitPrice = Number(product.unitPrice || 0);
+    const cost = unitPrice * qty;
+
+    unitSpan.textContent = product.unit || "-";
+    costSpan.textContent = cost.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    });
+  }
+
+  select.addEventListener("change", recalcRow);
+  qtyInput.addEventListener("input", recalcRow);
+
+  btnRemove.addEventListener("click", () => {
+    tr.remove();
+  });
+
+  ingredientsBody.appendChild(tr);
+}
 
     if (btnAddIngredientRow) {
       btnAddIngredientRow.addEventListener("click", () => {
