@@ -841,6 +841,20 @@
     let dishList = []; // NOVO: fichas técnicas em memória
 
 
+        // Carregar fichas técnicas do Firestore
+    async function loadDishes() {
+      try {
+        const res = await fetch(API_BASE + "/dishes");
+        const data = await res.json();
+        // garante que é array
+        dishList = Array.isArray(data) ? data : [];
+        renderDishCards(); // redesenha os cards na tela
+      } catch (err) {
+        console.error("Erro ao carregar fichas técnicas:", err);
+        alert("Erro ao carregar fichas técnicas.");
+      }
+    }
+
 
         // ==============================
     // 🔄 Navegação entre abas
@@ -890,7 +904,12 @@
     });
     btnMenuSobre.addEventListener("click", () => showTab("sobre"));
     btnMenuCrm.addEventListener("click", () => showTab("crm"));
-    btnMenuFichas.addEventListener("click", () => showTab("fichas")); // NOVO
+
+    btnMenuFichas.addEventListener("click", () => {
+      showTab("fichas");
+      loadDishes(); // carrega as fichas do banco sempre que abrir a aba
+    });
+
 
     
 
@@ -1592,10 +1611,9 @@
         const marginPercent =
           salePrice && salePrice > 0 ? (marginValue / salePrice) * 100 : 0;
 
-        const dish = {
-          id: Date.now().toString(),
+               const dishPayload = {
           name,
-          yieldQty,
+          yieldPortions: yieldQty,        // nome que a API espera
           salePrice,
           costTotal: totalCost,
           costPerPortion,
@@ -1604,9 +1622,31 @@
           ingredients,
         };
 
-        dishList.push(dish);
-        renderDishCards();
-        closeDishModal();
+        // Enviar ficha técnica para a API / Firestore
+        fetch(API_BASE + "/dishes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(dishPayload),
+        })
+          .then((res) => {
+            if (!res.ok) {
+              return res.text().then((t) => {
+                throw new Error(t || "Erro ao salvar ficha");
+              });
+            }
+            return res.json();
+          })
+          .then((data) => {
+            console.log("Ficha salva:", data);
+            alert("Ficha técnica salva com sucesso!");
+            closeDishModal();
+            loadDishes(); // recarrega lista a partir do Firestore
+          })
+          .catch((err) => {
+            console.error("Erro ao salvar ficha técnica:", err);
+            alert("Erro ao salvar ficha técnica. Veja o console para detalhes.");
+          });
+
       });
     }
 
@@ -2043,6 +2083,7 @@ function renderOrdersTable(orders) {
       await loadProducts();
       await loadOrders();
       await loadCustomers();
+      await loadDishes();  // 🆕 carrega fichas também
       showTab("estoque");
     }
 
