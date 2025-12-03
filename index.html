@@ -52,10 +52,16 @@
           <span>👤</span> <span>CRM / Clientes</span>
         </button>
 
+        <!-- NOVO: menu de Fichas técnicas -->
+        <button id="menu-fichas" class="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-slate-300 hover:bg-slate-800/60">
+          <span>🍝</span> <span>Fichas técnicas</span>
+        </button>
+
         <button id="menu-sobre" class="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-slate-300 hover:bg-slate-800/60">
           <span>⚙️</span> <span>Sobre / Ajuda</span>
         </button>
       </nav>
+
 
       <div class="px-6 py-4 border-t border-slate-800 text-xs text-slate-500">
         API conectada ao Firebase<br/>
@@ -248,6 +254,40 @@
           </div>
         </div>
 
+
+                <!-- ABA FICHAS TÉCNICAS -->
+        <div id="tab-fichas" class="space-y-4 hidden">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div>
+              <h2 class="text-lg font-semibold text-slate-50">Fichas técnicas de pratos</h2>
+              <p class="text-sm text-slate-400">
+                Monte o prato usando os insumos do estoque para ver custo e CMV.
+              </p>
+            </div>
+            <button
+              id="btn-open-dish-modal"
+              class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-amber-500 text-slate-950 hover:bg-amber-400 transition"
+            >
+              <span>➕</span>
+              <span>Nova ficha técnica</span>
+            </button>
+          </div>
+
+          <!-- ONDE OS CARDS DE PRATOS VÃO APARECER -->
+          <div
+            id="dish-cards"
+            class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"
+          >
+            <div
+              class="col-span-1 md:col-span-2 xl:col-span-3 text-xs text-slate-500 border border-dashed border-slate-800 rounded-2xl px-4 py-6 text-center"
+            >
+              Nenhuma ficha cadastrada ainda.
+              Clique em <span class="font-semibold text-amber-400">“Nova ficha técnica”</span> para criar a primeira.
+            </div>
+          </div>
+        </div>
+
+        
         <!-- ABA PEDIDOS -->
         <div id="tab-pedidos" class="space-y-4 hidden">
           <div class="flex items-center justify-between">
@@ -568,6 +608,148 @@
     </div>
   </div>
 
+
+  <!-- MODAL: Ficha técnica do prato -->
+  <div
+    id="dish-modal"
+    class="fixed inset-0 z-50 bg-black/70 flex items-center justify-center px-2 sm:px-4 hidden"
+  >
+    <div
+      class="bg-slate-950 border border-slate-800 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden shadow-2xl flex flex-col"
+    >
+      <!-- Cabeçalho -->
+      <div
+        class="px-4 sm:px-6 py-3 border-b border-slate-800 flex items-center justify-between"
+      >
+        <div>
+          <h2 class="text-sm sm:text-base font-semibold text-slate-100">
+            Nova ficha técnica de prato
+          </h2>
+          <p class="text-[11px] text-slate-400">
+            Use os insumos cadastrados para calcular o custo da receita.
+          </p>
+        </div>
+        <button
+          id="btn-close-dish-modal"
+          class="w-7 h-7 flex items-center justify-center rounded-full hover:bg-slate-800 text-slate-300 text-sm"
+        >
+          ✕
+        </button>
+      </div>
+
+      <!-- Conteúdo -->
+      <div class="flex-1 overflow-auto p-4 sm:p-6">
+        <form id="dish-form" class="space-y-4 text-xs sm:text-sm">
+          <!-- Dados gerais do prato -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="sm:col-span-2">
+              <label class="block text-[11px] text-slate-400 mb-1">Nome do prato</label>
+              <input
+                type="text"
+                id="dish-name"
+                required
+                class="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2"
+              />
+            </div>
+            <div>
+              <label class="block text-[11px] text-slate-400 mb-1">
+                Rendimento (porções)
+              </label>
+              <input
+                type="number"
+                min="1"
+                id="dish-yield"
+                value="1"
+                required
+                class="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2"
+              />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-[11px] text-slate-400 mb-1">
+                Preço de venda por porção (R$)
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                id="dish-sale-price"
+                value="0"
+                class="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2"
+              />
+            </div>
+          </div>
+
+          <!-- Ingredientes -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <p class="text-[11px] text-slate-400">
+                Ingredientes da ficha técnica
+              </p>
+              <button
+                type="button"
+                id="btn-add-ingredient-row"
+                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-[11px] font-medium bg-slate-800 text-slate-100 hover:bg-slate-700"
+              >
+                ➕ Adicionar ingrediente
+              </button>
+            </div>
+
+            <div class="border border-slate-800 rounded-xl overflow-hidden">
+              <div class="max-h-60 overflow-auto">
+                <table class="min-w-full text-[11px]">
+                  <thead class="bg-slate-900/80 text-slate-400">
+                    <tr>
+                      <th class="px-2 py-2 text-left font-medium">Insumo</th>
+                      <th class="px-2 py-2 text-right font-medium">Qtd. na receita</th>
+                      <th class="px-2 py-2 text-right font-medium">Unidade</th>
+                      <th class="px-2 py-2 text-right font-medium">Custo estimado</th>
+                      <th class="px-2 py-2 text-center font-medium">Ação</th>
+                    </tr>
+                  </thead>
+                  <tbody id="ingredients-body" class="divide-y divide-slate-800">
+                    <!-- linhas via JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <p class="text-[11px] text-slate-500">
+              A unidade e o valor por unidade vêm do cadastro de insumos. Você só informa quanto vai na receita.
+            </p>
+          </div>
+        </form>
+      </div>
+
+      <!-- Rodapé -->
+      <div
+        class="px-4 sm:px-6 py-3 border-t border-slate-800 flex items-center justify-between text-[11px]"
+      >
+        <span class="text-slate-500">
+          O custo é calculado automaticamente com base nos preços atuais dos insumos.
+        </span>
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            id="btn-cancel-dish"
+            class="px-3 py-1.5 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-900"
+          >
+            Cancelar
+          </button>
+          <button
+            form="dish-form"
+            type="submit"
+            class="px-4 py-1.5 rounded-xl bg-emerald-500 text-slate-950 text-[11px] font-semibold hover:bg-emerald-400"
+          >
+            Salvar ficha
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  
   <!-- SCRIPT PRINCIPAL -->
   <script>
     // 🔗 URL da sua API no Render
@@ -591,6 +773,37 @@
     const btnMenuSobre = document.getElementById("menu-sobre");
     const btnMenuCrm = document.getElementById("menu-crm");
 
+
+    const tabEstoque = document.getElementById("tab-estoque");
+    const tabPedidos = document.getElementById("tab-pedidos");
+    const tabSobre = document.getElementById("tab-sobre");
+    const tabCrm = document.getElementById("tab-crm");
+    const tabFichas = document.getElementById("tab-fichas"); // NOVO
+
+    const btnMenuEstoque = document.getElementById("menu-estoque");
+    const btnMenuPedidos = document.getElementById("menu-pedidos");
+    const btnMenuSobre = document.getElementById("menu-sobre");
+    const btnMenuCrm = document.getElementById("menu-crm");
+    const btnMenuFichas = document.getElementById("menu-fichas"); // NOVO
+
+    // ---- Fichas técnicas: elementos do modal ----
+    const dishModal = document.getElementById("dish-modal");
+    const btnOpenDishModal = document.getElementById("btn-open-dish-modal");
+    const btnCloseDishModal = document.getElementById("btn-close-dish-modal");
+    const btnCancelDish = document.getElementById("btn-cancel-dish");
+
+    const dishForm = document.getElementById("dish-form");
+    const dishNameInput = document.getElementById("dish-name");
+    const dishYieldInput = document.getElementById("dish-yield");
+    const dishSalePriceInput = document.getElementById("dish-sale-price");
+
+    const btnAddIngredientRow = document.getElementById("btn-add-ingredient-row");
+    const ingredientsBody = document.getElementById("ingredients-body");
+    const dishCardsContainer = document.getElementById("dish-cards");
+
+
+    
+    
     const btnOpenProductForm = document.getElementById("btn-open-product-form");
     const btnCloseProductForm = document.getElementById("btn-close-product-form");
     const btnCancelProduct = document.getElementById("btn-cancel-product");
@@ -636,28 +849,28 @@
     let allProducts = [];
     let stockChart = null;
     let allCustomers = [];
+    let dishList = []; // NOVO: fichas técnicas em memória
 
-    // ==============================
+
+
+        // ==============================
     // 🔄 Navegação entre abas
     // ==============================
     function showTab(tab) {
+      // esconde todas
       tabEstoque.classList.add("hidden");
       tabPedidos.classList.add("hidden");
       tabSobre.classList.add("hidden");
       tabCrm.classList.add("hidden");
+      tabFichas.classList.add("hidden");
 
-      btnMenuEstoque.classList.remove("bg-slate-800", "text-amber-400");
-      btnMenuEstoque.classList.add("text-slate-300");
+      // reseta todos os botões
+      [btnMenuEstoque, btnMenuPedidos, btnMenuCrm, btnMenuSobre, btnMenuFichas].forEach((btn) => {
+        btn.classList.remove("bg-slate-800", "text-amber-400");
+        btn.classList.add("text-slate-300");
+      });
 
-      btnMenuPedidos.classList.remove("bg-slate-800", "text-amber-400");
-      btnMenuPedidos.classList.add("text-slate-300");
-
-      btnMenuSobre.classList.remove("bg-slate-800", "text-amber-400");
-      btnMenuSobre.classList.add("text-slate-300");
-
-      btnMenuCrm.classList.remove("bg-slate-800", "text-amber-400");
-      btnMenuCrm.classList.add("text-slate-300");
-
+      // exibe a aba selecionada
       if (tab === "estoque") {
         tabEstoque.classList.remove("hidden");
         btnMenuEstoque.classList.add("bg-slate-800", "text-amber-400");
@@ -666,14 +879,18 @@
         tabPedidos.classList.remove("hidden");
         btnMenuPedidos.classList.add("bg-slate-800", "text-amber-400");
         btnMenuPedidos.classList.remove("text-slate-300");
-      } else if (tab === "sobre") {
-        tabSobre.classList.remove("hidden");
-        btnMenuSobre.classList.add("bg-slate-800", "text-amber-400");
-        btnMenuSobre.classList.remove("text-slate-300");
       } else if (tab === "crm") {
         tabCrm.classList.remove("hidden");
         btnMenuCrm.classList.add("bg-slate-800", "text-amber-400");
         btnMenuCrm.classList.remove("text-slate-300");
+      } else if (tab === "sobre") {
+        tabSobre.classList.remove("hidden");
+        btnMenuSobre.classList.add("bg-slate-800", "text-amber-400");
+        btnMenuSobre.classList.remove("text-slate-300");
+      } else if (tab === "fichas") {
+        tabFichas.classList.remove("hidden");
+        btnMenuFichas.classList.add("bg-slate-800", "text-amber-400");
+        btnMenuFichas.classList.remove("text-slate-300");
       }
     }
 
@@ -684,6 +901,9 @@
     });
     btnMenuSobre.addEventListener("click", () => showTab("sobre"));
     btnMenuCrm.addEventListener("click", () => showTab("crm"));
+    btnMenuFichas.addEventListener("click", () => showTab("fichas")); // NOVO
+
+    
 
     // -----------------------------
     // Abrir / fechar formulário
@@ -1192,6 +1412,329 @@
       }
     }
 
+
+        // ==============================
+    // 🧾 FICHAS TÉCNICAS DE PRATOS
+    // ==============================
+
+    function openDishModal() {
+      // limpa formulário
+      dishForm.reset();
+      dishYieldInput.value = 1;
+      dishSalePriceInput.value = 0;
+      ingredientsBody.innerHTML = "";
+
+      // garante pelo menos 1 linha
+      addIngredientRow();
+
+      dishModal.classList.remove("hidden");
+    }
+
+    function closeDishModal() {
+      dishModal.classList.add("hidden");
+    }
+
+    if (btnOpenDishModal) {
+      btnOpenDishModal.addEventListener("click", openDishModal);
+    }
+    if (btnCloseDishModal) {
+      btnCloseDishModal.addEventListener("click", closeDishModal);
+    }
+    if (btnCancelDish) {
+      btnCancelDish.addEventListener("click", closeDishModal);
+    }
+
+    if (dishModal) {
+      dishModal.addEventListener("click", (e) => {
+        if (e.target === dishModal) {
+          closeDishModal();
+        }
+      });
+    }
+
+    // cria uma linha de ingrediente
+    function addIngredientRow() {
+      const tr = document.createElement("tr");
+      tr.className = "hover:bg-slate-900/60";
+
+      tr.innerHTML = `
+        <td class="px-2 py-2">
+          <select
+            class="ingredient-product w-full rounded-lg bg-slate-900 border border-slate-700 px-2 py-1"
+          >
+            <option value="">Selecione o insumo</option>
+          </select>
+        </td>
+        <td class="px-2 py-2 text-right">
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            class="ingredient-qty w-20 text-right rounded-lg bg-slate-900 border border-slate-700 px-2 py-1"
+          />
+        </td>
+        <td class="px-2 py-2 text-right">
+          <span class="ingredient-unit text-slate-300">-</span>
+        </td>
+        <td class="px-2 py-2 text-right">
+          <span class="ingredient-cost text-slate-300">R$ 0,00</span>
+        </td>
+        <td class="px-2 py-2 text-center">
+          <button
+            type="button"
+            class="btn-remove-ingredient text-[11px] text-rose-400 hover:underline"
+          >
+            Remover
+          </button>
+        </td>
+      `;
+
+      const select = tr.querySelector(".ingredient-product");
+      const qtyInput = tr.querySelector(".ingredient-qty");
+      const unitSpan = tr.querySelector(".ingredient-unit");
+      const costSpan = tr.querySelector(".ingredient-cost");
+      const btnRemove = tr.querySelector(".btn-remove-ingredient");
+
+      // preenche o select com produtos do estoque
+      allProducts.forEach((p) => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = `${p.description || ""} (${p.unit || "-"})`;
+        select.appendChild(opt);
+      });
+
+      function recalcRow() {
+        const id = select.value;
+        const qty = Number(qtyInput.value || 0);
+        const product = allProducts.find((p) => p.id === id);
+
+        if (!product || !qty || isNaN(qty)) {
+          unitSpan.textContent = product && product.unit ? product.unit : "-";
+          costSpan.textContent = "R$ 0,00";
+          return;
+        }
+
+        const unitPrice = Number(product.unitPrice || 0);
+        const cost = unitPrice * qty;
+
+        unitSpan.textContent = product.unit || "-";
+        costSpan.textContent = cost.toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+        });
+      }
+
+      select.addEventListener("change", recalcRow);
+      qtyInput.addEventListener("input", recalcRow);
+
+      btnRemove.addEventListener("click", () => {
+        tr.remove();
+      });
+
+      ingredientsBody.appendChild(tr);
+    }
+
+    if (btnAddIngredientRow) {
+      btnAddIngredientRow.addEventListener("click", () => {
+        addIngredientRow();
+      });
+    }
+
+    // salvar ficha
+    if (dishForm) {
+      dishForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const name = dishNameInput.value.trim();
+        const yieldQty = Number(dishYieldInput.value || 1);
+        const salePrice = Number(dishSalePriceInput.value || 0);
+
+        if (!name) {
+          alert("Informe o nome do prato.");
+          return;
+        }
+        if (!yieldQty || isNaN(yieldQty) || yieldQty <= 0) {
+          alert("Informe um rendimento válido (porções).");
+          return;
+        }
+
+        const rows = Array.from(ingredientsBody.querySelectorAll("tr"));
+        if (rows.length === 0) {
+          alert("Adicione pelo menos um ingrediente.");
+          return;
+        }
+
+        const ingredients = [];
+        let totalCost = 0;
+
+        rows.forEach((tr) => {
+          const select = tr.querySelector(".ingredient-product");
+          const qtyInput = tr.querySelector(".ingredient-qty");
+
+          const productId = select.value;
+          const qty = Number(qtyInput.value || 0);
+          if (!productId || !qty || isNaN(qty) || qty <= 0) return;
+
+          const product = allProducts.find((p) => p.id === productId);
+          if (!product) return;
+
+          const unitPrice = Number(product.unitPrice || 0);
+          const cost = unitPrice * qty;
+
+          ingredients.push({
+            productId,
+            productName: product.description || "",
+            unit: product.unit || "",
+            qty,
+            unitPrice,
+            cost,
+          });
+
+          totalCost += cost;
+        });
+
+        if (ingredients.length === 0) {
+          alert("Preencha corretamente pelo menos um ingrediente.");
+          return;
+        }
+
+        const costPerPortion = totalCost / yieldQty;
+        const marginValue = salePrice ? salePrice - costPerPortion : 0;
+        const marginPercent =
+          salePrice && salePrice > 0 ? (marginValue / salePrice) * 100 : 0;
+
+        const dish = {
+          id: Date.now().toString(),
+          name,
+          yieldQty,
+          salePrice,
+          costTotal: totalCost,
+          costPerPortion,
+          marginValue,
+          marginPercent,
+          ingredients,
+        };
+
+        dishList.push(dish);
+        renderDishCards();
+        closeDishModal();
+      });
+    }
+
+    function renderDishCards() {
+      dishCardsContainer.innerHTML = "";
+
+      if (!dishList.length) {
+        dishCardsContainer.innerHTML = `
+          <div
+            class="col-span-1 md:col-span-2 xl:col-span-3 text-xs text-slate-500 border border-dashed border-slate-800 rounded-2xl px-4 py-6 text-center"
+          >
+            Nenhuma ficha cadastrada ainda.
+            Clique em <span class="font-semibold text-amber-400">“Nova ficha técnica”</span> para criar a primeira.
+          </div>
+        `;
+        return;
+      }
+
+      dishList.forEach((dish) => {
+        const card = document.createElement("div");
+        card.className =
+          "rounded-2xl bg-slate-950 border border-slate-800 p-4 flex flex-col gap-3 text-xs";
+
+        const custoTotal = dish.costTotal.toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+        });
+        const custoPorPorcao = dish.costPerPortion.toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+        });
+        const venda =
+          dish.salePrice > 0
+            ? dish.salePrice.toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              })
+            : "–";
+        const margemValor = dish.marginValue.toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+        });
+        const margemPercentStr = `${dish.marginPercent.toFixed(1)}%`;
+
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <h3 class="text-sm font-semibold text-slate-50">
+                ${dish.name}
+              </h3>
+              <p class="text-[11px] text-slate-400">
+                Rendimento: <span class="font-medium">${dish.yieldQty} porções</span>
+              </p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div class="bg-slate-900/60 rounded-xl p-2">
+              <p class="text-[10px] text-slate-400">Custo total da receita</p>
+              <p class="text-sm font-semibold text-amber-300">${custoTotal}</p>
+              <p class="text-[10px] text-slate-500">
+                Custo por porção: <span class="font-medium">${custoPorPorcao}</span>
+              </p>
+            </div>
+            <div class="bg-slate-900/60 rounded-xl p-2">
+              <p class="text-[10px] text-slate-400">Preço de venda</p>
+              <p class="text-sm font-semibold text-emerald-300">${venda}</p>
+              <p class="text-[10px] text-slate-500">
+                Margem bruta: <span class="font-medium">${margemValor} (${margemPercentStr})</span>
+              </p>
+            </div>
+          </div>
+
+          <div class="bg-slate-900/60 rounded-xl p-2">
+            <p class="text-[10px] text-slate-400 mb-1">
+              Ingredientes da ficha
+            </p>
+            <div class="max-h-32 overflow-auto">
+              <table class="w-full text-[10px]">
+                <thead class="text-slate-400">
+                  <tr>
+                    <th class="text-left px-1 py-1">Insumo</th>
+                    <th class="text-right px-1 py-1">Qtd.</th>
+                    <th class="text-right px-1 py-1">Unid.</th>
+                    <th class="text-right px-1 py-1">Custo</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800">
+                  ${dish.ingredients
+                    .map((ing) => {
+                      const c = ing.cost.toLocaleString("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
+                      });
+                      return `
+                        <tr>
+                          <td class="px-1 py-1">${ing.productName}</td>
+                          <td class="px-1 py-1 text-right">${ing.qty.toFixed(2)}</td>
+                          <td class="px-1 py-1 text-right">${ing.unit}</td>
+                          <td class="px-1 py-1 text-right">${c}</td>
+                        </tr>
+                      `;
+                    })
+                    .join("")}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+
+        dishCardsContainer.appendChild(card);
+      });
+    }
+
+
+
+    
     // -----------------------------
     // Pedidos
     // -----------------------------
