@@ -835,25 +835,30 @@
       }
     });
 
-    let allProducts = [];
-    let stockChart = null;
-    let allCustomers = [];
-    let dishList = []; // NOVO: fichas técnicas em memória
+  let allProducts = [];
+  let stockChart = null;
+  let allCustomers = [];
+  let dishList = [];        // fichas técnicas em memória
+  let editingDishId = null; // ⬅️ id da ficha que está sendo editada (ou null se for nova)
+
 
 
         // Carregar fichas técnicas do Firestore
-    async function loadDishes() {
-      try {
-        const res = await fetch(API_BASE + "/dishes");
-        const data = await res.json();
-        // garante que é array
-        dishList = Array.isArray(data) ? data : [];
-        renderDishCards(); // redesenha os cards na tela
-      } catch (err) {
-        console.error("Erro ao carregar fichas técnicas:", err);
-        alert("Erro ao carregar fichas técnicas.");
-      }
-    }
+// Carregar fichas técnicas do Firestore
+async function loadDishes() {
+  try {
+    const res = await fetch(API_BASE + "/dishes");
+    const data = await res.json();
+    dishList = (Array.isArray(data) ? data : []).map((d) => ({
+      ...d,
+      yieldQty: d.yieldQty ?? d.yieldPortions ?? 1,
+    }));
+    renderDishCards();
+  } catch (err) {
+    console.error("Erro ao carregar fichas técnicas:", err);
+    alert("Erro ao carregar fichas técnicas.");
+  }
+}
 
 
         // ==============================
@@ -1421,15 +1426,12 @@
     }
 
 
-   // ==============================
-// 🧾 FICHAS TÉCNICAS DE PRATOS
-// ==============================
-
-async function openDishModal() {
-  // 1) Garante que os produtos do estoque foram carregados
+// Abrir modal de ficha técnica (novo ou edição)
+async function openDishModal(dishToEdit = null) {
+  // garante que produtos estejam carregados
   if (!allProducts || allProducts.length === 0) {
     try {
-      await loadProducts(); // chama /products de novo se estiver vazio
+      await loadProducts();
     } catch (err) {
       console.error("Erro ao carregar produtos para a ficha:", err);
       alert("Não consegui carregar os insumos. Verifique se a API /products está ok.");
@@ -1437,18 +1439,40 @@ async function openDishModal() {
     }
   }
 
-  console.log("Qtd de produtos carregados para a ficha:", allProducts.length);
+  // define se é edição ou novo
+  editingDishId = dishToEdit ? dishToEdit.id : null;
 
-  // 2) Limpa o formulário da ficha
+  // limpa formulário
   dishForm.reset();
-  dishYieldInput.value = 1;
-  dishSalePriceInput.value = 0;
   ingredientsBody.innerHTML = "";
 
-  // 3) Cria pelo menos 1 linha de ingrediente
-  addIngredientRow();
+  if (dishToEdit) {
+    // MODO EDIÇÃO
+    const y =
+      Number(dishToEdit.yieldQty) ||
+      Number(dishToEdit.yieldPortions) ||
+      1;
 
-  // 4) Abre o modal
+    dishNameInput.value = dishToEdit.name || "";
+    dishYieldInput.value = y;
+    dishSalePriceInput.value = Number(dishToEdit.salePrice || 0);
+
+    // recria as linhas de ingredientes
+    if (Array.isArray(dishToEdit.ingredients)) {
+      dishToEdit.ingredients.forEach((ing) => {
+        addIngredientRow(ing); // passa ingrediente para preencher
+      });
+    } else {
+      addIngredientRow();
+    }
+  } else {
+    // NOVA FICHA
+    dishYieldInput.value = 1;
+    dishSalePriceInput.value = 0;
+    addIngredientRow();
+  }
+
+  // abre modal
   dishModal.classList.remove("hidden");
 }
 
@@ -1467,12 +1491,13 @@ async function openDishModal() {
       btnCancelDish.addEventListener("click", closeDishModal);
     }
 
-    if (btnOpenDishModal) {
-      btnOpenDishModal.addEventListener("click", openDishModal);
-    }
+   if (btnOpenDishModal) {
+    btnOpenDishModal.addEventListener("click", () => openDishModal());
+  }
 
 
-   function addIngredientRow() {
+
+ function addIngredientRow(initialIngredient = null) {
   const tr = document.createElement("tr");
   tr.className = "hover:bg-slate-900/60";
 
@@ -1514,14 +1539,13 @@ async function openDishModal() {
   const costSpan = tr.querySelector(".ingredient-cost");
   const btnRemove = tr.querySelector(".btn-remove-ingredient");
 
-  // 🛟 Segurança: se não tiver insumos, mostra uma mensagem
+  // popula o select com os produtos
   if (!allProducts || allProducts.length === 0) {
     const opt = document.createElement("option");
     opt.value = "";
     opt.textContent = "Nenhum insumo cadastrado";
     select.appendChild(opt);
   } else {
-    // Preenche o select com os produtos do estoque
     allProducts.forEach((p) => {
       const opt = document.createElement("option");
       opt.value = p.id;
@@ -1535,7 +1559,7 @@ async function openDishModal() {
     const qty = Number(qtyInput.value || 0);
     const product = allProducts.find((p) => p.id === id);
 
-    if (!product || !qty || isNaN(qty)) {
+    if (!product || !qty || isNaN(qty) || qty <= 0) {
       unitSpan.textContent = product && product.unit ? product.unit : "-";
       costSpan.textContent = "R$ 0,00";
       return;
@@ -1558,8 +1582,17 @@ async function openDishModal() {
     tr.remove();
   });
 
+  // ⚙️ Se veio um ingrediente para preencher (modo edição)
+  if (initialIngredient) {
+    select.value = initialIngredient.productId || "";
+    qtyInput.value = initialIngredient.qty != null ? initialIngredient.qty : "";
+    // força cálculo inicial
+    recalcRow();
+  }
+
   ingredientsBody.appendChild(tr);
 }
+
 
     if (btnAddIngredientRow) {
       btnAddIngredientRow.addEventListener("click", () => {
@@ -1568,108 +1601,115 @@ async function openDishModal() {
     }
 
     // salvar ficha
-    if (dishForm) {
-      dishForm.addEventListener("submit", (e) => {
-        e.preventDefault();
+// salvar ficha (novo ou edição)
+if (dishForm) {
+  dishForm.addEventListener("submit", (e) => {
+    e.preventDefault();
 
-        const name = dishNameInput.value.trim();
-        const yieldQty = Number(dishYieldInput.value || 1);
-        const salePrice = Number(dishSalePriceInput.value || 0);
+    const name = dishNameInput.value.trim();
+    const yieldQty = Number(dishYieldInput.value || 1);
+    const salePrice = Number(dishSalePriceInput.value || 0);
 
-        if (!name) {
-          alert("Informe o nome do prato.");
-          return;
-        }
-        if (!yieldQty || isNaN(yieldQty) || yieldQty <= 0) {
-          alert("Informe um rendimento válido (porções).");
-          return;
-        }
-
-        const rows = Array.from(ingredientsBody.querySelectorAll("tr"));
-        if (rows.length === 0) {
-          alert("Adicione pelo menos um ingrediente.");
-          return;
-        }
-
-        const ingredients = [];
-        let totalCost = 0;
-
-        rows.forEach((tr) => {
-          const select = tr.querySelector(".ingredient-product");
-          const qtyInput = tr.querySelector(".ingredient-qty");
-
-          const productId = select.value;
-          const qty = Number(qtyInput.value || 0);
-          if (!productId || !qty || isNaN(qty) || qty <= 0) return;
-
-          const product = allProducts.find((p) => p.id === productId);
-          if (!product) return;
-
-          const unitPrice = Number(product.unitPrice || 0);
-          const cost = unitPrice * qty;
-
-          ingredients.push({
-            productId,
-            productName: product.description || "",
-            unit: product.unit || "",
-            qty,
-            unitPrice,
-            cost,
-          });
-
-          totalCost += cost;
-        });
-
-        if (ingredients.length === 0) {
-          alert("Preencha corretamente pelo menos um ingrediente.");
-          return;
-        }
-
-        const costPerPortion = totalCost / yieldQty;
-        const marginValue = salePrice ? salePrice - costPerPortion : 0;
-        const marginPercent =
-          salePrice && salePrice > 0 ? (marginValue / salePrice) * 100 : 0;
-
-               const dishPayload = {
-          name,
-          yieldPortions: yieldQty,        // nome que a API espera
-          salePrice,
-          costTotal: totalCost,
-          costPerPortion,
-          marginValue,
-          marginPercent,
-          ingredients,
-        };
-
-        // Enviar ficha técnica para a API / Firestore
-        fetch(API_BASE + "/dishes", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(dishPayload),
-        })
-          .then((res) => {
-            if (!res.ok) {
-              return res.text().then((t) => {
-                throw new Error(t || "Erro ao salvar ficha");
-              });
-            }
-            return res.json();
-          })
-          .then((data) => {
-            console.log("Ficha salva:", data);
-            alert("Ficha técnica salva com sucesso!");
-            closeDishModal();
-            loadDishes(); // recarrega lista a partir do Firestore
-          })
-          .catch((err) => {
-            console.error("Erro ao salvar ficha técnica:", err);
-            alert("Erro ao salvar ficha técnica. Veja o console para detalhes.");
-          });
-
-      });
+    if (!name) {
+      alert("Informe o nome do prato.");
+      return;
+    }
+    if (!yieldQty || isNaN(yieldQty) || yieldQty <= 0) {
+      alert("Informe um rendimento válido (porções).");
+      return;
     }
 
-    function renderDishCards() {
+    const rows = Array.from(ingredientsBody.querySelectorAll("tr"));
+    if (rows.length === 0) {
+      alert("Adicione pelo menos um ingrediente.");
+      return;
+    }
+
+    const ingredients = [];
+    let totalCost = 0;
+
+    rows.forEach((tr) => {
+      const select = tr.querySelector(".ingredient-product");
+      const qtyInput = tr.querySelector(".ingredient-qty");
+
+      const productId = select.value;
+      const qty = Number(qtyInput.value || 0);
+      if (!productId || !qty || isNaN(qty) || qty <= 0) return;
+
+      const product = allProducts.find((p) => p.id === productId);
+      if (!product) return;
+
+      const unitPrice = Number(product.unitPrice || 0);
+      const cost = unitPrice * qty;
+
+      ingredients.push({
+        productId,
+        productName: product.description || "",
+        unit: product.unit || "",
+        qty,
+        unitPrice,
+        cost,
+      });
+
+      totalCost += cost;
+    });
+
+    if (ingredients.length === 0) {
+      alert("Preencha corretamente pelo menos um ingrediente.");
+      return;
+    }
+
+    const costPerPortion = totalCost / yieldQty;
+    const marginValue = salePrice ? salePrice - costPerPortion : 0;
+    const marginPercent =
+      salePrice && salePrice > 0 ? (marginValue / salePrice) * 100 : 0;
+
+    const dishPayload = {
+      name,
+      yieldPortions: yieldQty, // campo usado na API
+      salePrice,
+      costTotal: totalCost,
+      costPerPortion,
+      marginValue,
+      marginPercent,
+      ingredients,
+    };
+
+    const isEditing = !!editingDishId;
+    const url = isEditing
+      ? `${API_BASE}/dishes/${editingDishId}`
+      : `${API_BASE}/dishes`;
+    const method = isEditing ? "PATCH" : "POST";
+
+    fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dishPayload),
+    })
+      .then((res) => {
+        if (!res.ok) {
+          return res.text().then((t) => {
+            throw new Error(t || "Erro ao salvar ficha");
+          });
+        }
+        return res.json();
+      })
+      .then((data) => {
+        console.log("Ficha salva:", data);
+        alert(isEditing ? "Ficha técnica atualizada!" : "Ficha técnica salva com sucesso!");
+        closeDishModal();
+        editingDishId = null;
+        loadDishes(); // recarrega lista
+      })
+      .catch((err) => {
+        console.error("Erro ao salvar ficha técnica:", err);
+        alert("Erro ao salvar ficha técnica. Veja o console para detalhes.");
+      });
+  });
+}
+
+
+function renderDishCards() {
   dishCardsContainer.innerHTML = "";
 
   if (!dishList.length) {
@@ -1685,9 +1725,10 @@ async function openDishModal() {
   }
 
   dishList.forEach((dish) => {
-    // 👉 aqui usamos a função de indicadores
+    const ingredientesArr = Array.isArray(dish.ingredients) ? dish.ingredients : [];
+
     const indicadores = calcularIndicadoresFicha(
-      dish.ingredients.map((ing) => ({ custo: ing.cost })), // custo de cada ingrediente na receita
+      ingredientesArr.map((ing) => ({ custo: ing.cost })),
       dish.yieldQty,
       dish.salePrice
     );
@@ -1745,10 +1786,25 @@ async function openDishModal() {
             Rendimento: <span class="font-medium">${dish.yieldQty} porções</span>
           </p>
         </div>
+        <div class="flex gap-2 text-[11px]">
+          <button
+            class="text-sky-400 hover:underline"
+            data-dish-action="edit"
+            data-dish-id="${dish.id}"
+          >
+            Editar
+          </button>
+          <button
+            class="text-rose-400 hover:underline"
+            data-dish-action="delete"
+            data-dish-id="${dish.id}"
+          >
+            Excluir
+          </button>
+        </div>
       </div>
 
       <div class="grid grid-cols-2 gap-2">
-        <!-- BLOCO 1: Custo -->
         <div class="bg-slate-900/60 rounded-xl p-2">
           <p class="text-[10px] text-slate-400">Custo total da receita</p>
           <p class="text-sm font-semibold text-amber-300">${custoTotal}</p>
@@ -1763,7 +1819,6 @@ async function openDishModal() {
           </p>
         </div>
 
-        <!-- BLOCO 2: Venda / lucro / preços sugeridos -->
         <div class="bg-slate-900/60 rounded-xl p-2">
           <p class="text-[10px] text-slate-400">Preço de venda</p>
           <p class="text-sm font-semibold text-emerald-300">${venda}</p>
@@ -1802,7 +1857,7 @@ async function openDishModal() {
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-800">
-              ${dish.ingredients
+              ${ingredientesArr
                 .map((ing) => {
                   const c = ing.cost.toLocaleString("pt-BR", {
                     style: "currency",
@@ -1827,6 +1882,49 @@ async function openDishModal() {
     dishCardsContainer.appendChild(card);
   });
 }
+
+// Clique em Editar / Excluir ficha técnica
+dishCardsContainer.addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-dish-action]");
+  if (!btn) return;
+
+  const action = btn.getAttribute("data-dish-action");
+  const id = btn.getAttribute("data-dish-id");
+  if (!id) return;
+
+  const dish = dishList.find((d) => d.id === id);
+
+  if (action === "edit") {
+    if (!dish) {
+      alert("Ficha não encontrada na lista carregada.");
+      return;
+    }
+    openDishModal(dish); // abre modal já preenchido
+  }
+
+  if (action === "delete") {
+    if (!confirm("Tem certeza que deseja excluir esta ficha técnica?")) return;
+
+    fetch(`${API_BASE}/dishes/${id}`, {
+      method: "DELETE",
+    })
+      .then((res) => {
+        if (!res.ok) {
+          return res.text().then((t) => {
+            throw new Error(t || "Erro ao excluir ficha");
+          });
+        }
+      })
+      .then(() => {
+        alert("Ficha técnica excluída com sucesso!");
+        loadDishes();
+      })
+      .catch((err) => {
+        console.error("Erro ao excluir ficha técnica:", err);
+        alert("Erro ao excluir ficha técnica. Veja o console para detalhes.");
+      });
+  }
+});
 
 
 
