@@ -1294,14 +1294,16 @@ async function loadDishes() {
 
         let history = await res.json();
 
-        history = history
-          .filter(h => h.purchaseDate)
-          .map(h => ({
-            ...h,
-            _dateObj: new Date(h.purchaseDate)
-          }))
-          .filter(h => !isNaN(h._dateObj))
-          .sort((a, b) => a._dateObj - b._dateObj);
+        // aceita purchaseDate OU date e vários formatos de data
+history = history
+  .map((h) => {
+    const dateStr = h.purchaseDate || h.date || "";
+    const d = parseDateFlexible(dateStr);
+    return { ...h, _dateObj: d };
+  })
+  .filter((h) => h._dateObj && !isNaN(h._dateObj))
+  .sort((a, b) => a._dateObj - b._dateObj);
+
 
         if (history.length === 0) {
           repLastPrice.textContent = "–";
@@ -2215,6 +2217,38 @@ function arred2(valor) {
   return Number(n.toFixed(2));
 }
 
+
+
+ // =======================
+// 🗓️ Parse flexível de datas
+// =======================
+function parseDateFlexible(dateStr) {
+  if (!dateStr) return null;
+
+  // quebra por / ou -
+  const parts = dateStr.split(/[\/\-]/);
+
+  if (parts.length !== 3) {
+    const dRaw = new Date(dateStr);
+    return isNaN(dRaw) ? null : dRaw;
+  }
+
+  // Se começar com 4 dígitos, assumo AAAA-MM-DD
+  if (parts[0].length === 4) {
+    const dIso = new Date(dateStr);
+    return isNaN(dIso) ? null : dIso;
+  }
+
+  // Senão assumo DD/MM/AAAA ou DD-MM-AAAA
+  const [dd, mm, yyyy] = parts.map(n => parseInt(n, 10));
+  if (!dd || !mm || !yyyy) return null;
+
+  const d = new Date(yyyy, mm - 1, dd);
+  return isNaN(d) ? null : d;
+}
+   
+
+    
 /**
  * ingredientes: array de objetos no formato:
  *   { nome: "Arroz", custo: 0.55 }
